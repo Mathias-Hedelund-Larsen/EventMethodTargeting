@@ -3,10 +3,12 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.Experimental.SceneManagement;
+using static UnityEditor.SceneManagement.EditorSceneManager;
 #endif
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditor.SceneManagement.EditorSceneManager;
+using FoldergeistAssets.UnityEventMethodTargeting.Internal;
+using UnityEngine.SceneManagement;
 
 namespace FoldergeistAssets
 {
@@ -15,19 +17,24 @@ namespace FoldergeistAssets
         [ExecuteAlways]
         public sealed class EventMethodTargetOnUIChild : MonoBehaviour
         {
+            //public TargetMethodData[] TargetMethods { get => _targetMethods; }
+
+#if UNITY_EDITOR
 #pragma warning disable 0649
 
-            [SerializeField]
+            [SerializeField, EventMethodTarget]
             private UIEventChild _onlyForInspectorEventChild;
 
-            [SerializeField]
-            private TargetMethodData[] _targetMethods;
+            [SerializeField, HideInInspector]
+            private bool _onlyForInspectorSceneIsClosing;
 
 #pragma warning restore 0649
 
-            public TargetMethodData[] TargetMethods { get => _targetMethods; }
+            private void OnPrefabAssetCreated()
+            {
+                Awake();
+            }
 
-#if UNITY_EDITOR
             private void Awake()
             {
                 if (PrefabStageUtility.GetPrefabStage(gameObject) == null && !EditorApplication.isPlaying)
@@ -57,19 +64,24 @@ namespace FoldergeistAssets
                         AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
 
                     SerializedObject eventMethodTargeting = new SerializedObject(eventMethodTargetingAsset);
-                    var methodTargetingDataArray = eventMethodTargeting.FindProperty("_methodTargetingData");
-
-                    methodTargetingDataArray.arraySize++;
-
-                    var eventMethodData = methodTargetingDataArray.GetArrayElementAtIndex(methodTargetingDataArray.arraySize - 1);
+                    var methodTargetingDataArray = eventMethodTargeting.FindProperty("_methodTargetingData");                    
 
                     if (AssetDatabase.Contains(transform.root.gameObject))
                     {
-                        eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = "None";
-                        eventMethodData.FindPropertyRelative("_objectID").intValue = GetInstanceID();
+                        bool isDataContained = CheckIfDataContained(methodTargetingDataArray, "None", GetInstanceID());
 
-                        EditorUtility.SetDirty(eventMethodTargetingAsset);
-                        eventMethodTargeting.ApplyModifiedProperties();
+                        if (!isDataContained)
+                        {
+                            methodTargetingDataArray.arraySize++;
+
+                            var eventMethodData = methodTargetingDataArray.GetArrayElementAtIndex(methodTargetingDataArray.arraySize - 1);
+
+                            eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = "None";
+                            eventMethodData.FindPropertyRelative("_objectID").intValue = GetInstanceID();
+
+                            EditorUtility.SetDirty(eventMethodTargetingAsset);
+                            eventMethodTargeting.ApplyModifiedProperties();
+                        }
                     }
                     else
                     {
@@ -77,20 +89,29 @@ namespace FoldergeistAssets
 
                         sceneSaved = (scene) =>
                         {
+                            EditorSceneManager.sceneSaved -= sceneSaved;
+                            
                             SerializedObject serializedObject = new SerializedObject(this);
                             PropertyInfo inspectorModeInfo = typeof(SerializedObject).GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
                             inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
 
                             SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
 
-                        int localId = localIdProp.intValue;
+                            int localId = localIdProp.intValue;
 
-                            eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = AssetDatabase.AssetPathToGUID(gameObject.scene.path);
-                            eventMethodData.FindPropertyRelative("_objectID").intValue = localId;
+                            bool isDataContained = CheckIfDataContained(methodTargetingDataArray, AssetDatabase.AssetPathToGUID(gameObject.scene.path), localId);
 
-                            EditorUtility.SetDirty(eventMethodTargetingAsset);
-                            eventMethodTargeting.ApplyModifiedProperties();
-                            EditorSceneManager.sceneSaved -= sceneSaved;
+                            if (!isDataContained)
+                            {
+                                methodTargetingDataArray.arraySize++;
+                                var eventMethodData = methodTargetingDataArray.GetArrayElementAtIndex(methodTargetingDataArray.arraySize - 1);
+
+                                eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = AssetDatabase.AssetPathToGUID(gameObject.scene.path);
+                                eventMethodData.FindPropertyRelative("_objectID").intValue = localId;
+
+                                EditorUtility.SetDirty(eventMethodTargetingAsset);
+                                eventMethodTargeting.ApplyModifiedProperties();
+                            }
                         };
 
                         EditorSceneManager.sceneSaved += sceneSaved;
@@ -98,17 +119,103 @@ namespace FoldergeistAssets
                         EditorSceneManager.MarkSceneDirty(gameObject.scene);
                         EditorSceneManager.SaveScene(gameObject.scene);
                     }
-                }                          
+
+
+                    _onlyForInspectorSceneIsClosing = false;
+
+                    EditorSceneManager.sceneClosing += SceneIsClosing;
+                    EditorSceneManager.sceneOpening += SceneIsOpening;
+                }
+            }
+
+            private bool CheckIfDataContained(SerializedProperty methodTargetingDataArray, string guid, int id)
+            {
+                for (int i = 0; i < methodTargetingDataArray.arraySize; i++)
+                {
+                    var propertySceneGuid = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue;
+                    var propertyObjectID = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue;
+
+                    if(propertySceneGuid == guid && propertyObjectID == id)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            private void SceneIsOpening(string path, OpenSceneMode mode)
+            {
+                if (this && mode == OpenSceneMode.Single)
+                {
+                    _onlyForInspectorSceneIsClosing = true;
+                    EditorSceneManager.sceneOpening -= SceneIsOpening;
+                }
+            }
+
+            private void OnPrefabAssetDestroy()
+            {
+                OnDestroy();
             }
 
             private void OnDestroy()
             {
-                if (PrefabStageUtility.GetPrefabStage(gameObject) == null && !EditorApplication.isPlaying)
+                if (!_onlyForInspectorSceneIsClosing && PrefabStageUtility.GetPrefabStage(gameObject) == null && !EditorApplication.isPlaying)
                 {
                     if (gameObject.CompareTag("EditorOnly") && (gameObject.transform.parent.GetComponent<Button>() || gameObject.transform.parent.GetComponent<Slider>()))
                     {
-                        Debug.Log("Destroying prefab: " + gameObject.name);
+                        var eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(
+                        AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+
+                        SerializedObject eventMethodTargeting = new SerializedObject(eventMethodTargetingAsset);
+                        var methodTargetingDataArray = eventMethodTargeting.FindProperty("_methodTargetingData");
+
+                        SerializedObject serializedObject = new SerializedObject(this);
+                        PropertyInfo inspectorModeInfo = typeof(SerializedObject).GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
+                        inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
+
+                        SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
+
+                        int localId = localIdProp.intValue;
+
+                        for (int i = methodTargetingDataArray.arraySize - 1; i >= 0; i--)
+                        {
+                            if (AssetDatabase.Contains(transform.root.gameObject))
+                            {
+                                if(methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue == "None" &&
+                                    methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue == GetInstanceID())
+                                {
+                                    methodTargetingDataArray.DeleteArrayElementAtIndex(i);
+                                    EditorUtility.SetDirty(eventMethodTargetingAsset);
+                                    eventMethodTargeting.ApplyModifiedProperties();
+
+                                    break;
+                                }                                                                
+                            }
+                            else
+                            {     
+                                if (methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue == 
+                                    AssetDatabase.AssetPathToGUID(gameObject.scene.path) &&
+                                    methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue == localId)
+                                {
+                                    methodTargetingDataArray.DeleteArrayElementAtIndex(i);
+                                    EditorUtility.SetDirty(eventMethodTargetingAsset);
+                                    eventMethodTargeting.ApplyModifiedProperties();
+
+                                    break;
+                                }
+                            }
+                        }                        
                     }
+                }
+            }
+
+            private void SceneIsClosing(Scene scene, bool removingScene)
+            {
+                if(this && gameObject.scene == scene)
+                {
+                    _onlyForInspectorSceneIsClosing = true;
+                    EditorSceneManager.sceneClosing -= SceneIsClosing;
                 }
             }
 #endif

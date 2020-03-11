@@ -1,12 +1,16 @@
 ﻿using System;
+using UnityEngine;
 
 namespace FoldergeistAssets
 {
     namespace UnityEventMethodTargeting
     {
-        [Serializable]
-        public sealed class UIEventChild
+        namespace Internal
         {
+            [Serializable]
+            public sealed class UIEventChild
+            {
+            }
         }
     }
 }

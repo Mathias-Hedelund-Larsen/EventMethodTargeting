@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace FoldergeistAssets
 {
@@ -360,11 +364,43 @@ namespace FoldergeistAssets
                                     break;
                                 case PersistentListenerMode.EventDefined:
 
-                                    var parentComponents = (property.serializedObject.targetObject as MonoBehaviour).transform.parent.GetComponents<Component>();
+                                    var parentPath = property.propertyPath.Split('.')[0];
+                                    string indexWithEncaptionlation;
+                                    string indexPure;
+                                    
+                                    GetSubStringBetweenChars(property.propertyPath, '[', ']', out indexWithEncaptionlation, out indexPure);
 
-                                    for (int t = 0; t < parentComponents.Length; t++)
+                                    var methodTargetingDataProperty = property.serializedObject.FindProperty(parentPath);
+
+                                    var eventMethodDataProperty = methodTargetingDataProperty.GetArrayElementAtIndex(int.Parse(indexPure));
+                                    var sceneGuidProperty = eventMethodDataProperty.FindPropertyRelative("_sceneGuid");
+                                    var objectIDProperty = eventMethodDataProperty.FindPropertyRelative("_objectID");
+
+                                    List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
+
+                                    if (sceneGuidProperty.stringValue != "None")
                                     {
-                                        var fields = parentComponents[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        FindTargets(sceneGuidProperty, objectIDProperty, objects);
+                                    }
+                                    else
+                                    {
+                                        var obj = (UnityEngine.Object)typeof(UnityEngine.Object).
+                                            GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static).
+                                            Invoke(null, new object[] { objectIDProperty.intValue });
+
+                                        if(obj is EventMethodTargetOnUIChild)
+                                        {
+                                            objects.AddRange((obj as EventMethodTargetOnUIChild).GetComponentsInParent<Selectable>());
+                                        }
+                                        else 
+                                        {
+                                            objects.Add(obj);
+                                        }
+                                    }
+
+                                    for (int t = 0; t < objects.Count; t++)
+                                    {
+                                        var fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
                                             f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>))).ToArray();
 
                                         for (int y = 0; y < fields.Length; y++)
@@ -376,7 +412,7 @@ namespace FoldergeistAssets
                                             }
                                         }
 
-                                        fields = parentComponents[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
                                             f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>))).ToArray();
 
                                         for (int y = 0; y < fields.Length; y++)
@@ -390,7 +426,7 @@ namespace FoldergeistAssets
                                             }
                                         }
 
-                                        fields = parentComponents[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
                                            f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>))).ToArray();
 
                                         for (int y = 0; y < fields.Length; y++)
@@ -404,7 +440,7 @@ namespace FoldergeistAssets
                                             }
                                         }
 
-                                        fields = parentComponents[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
                                            f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>))).ToArray();
 
                                         for (int y = 0; y < fields.Length; y++)
@@ -502,6 +538,46 @@ namespace FoldergeistAssets
                 }
             }
 
+            private void FindTargets(SerializedProperty sceneGuidProperty, SerializedProperty objectIDProperty, List<UnityEngine.Object> objects)
+            {
+                var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuidProperty.stringValue);
+
+                for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
+                {
+                    if (EditorSceneManager.GetSceneAt(sceneIndex).path == scenePath)
+                    {
+                        var sceneObjects = EditorSceneManager.GetSceneAt(sceneIndex).GetRootGameObjects();
+
+                        for (int sceneObjectIndex = 0; sceneObjectIndex < sceneObjects.Length; sceneObjectIndex++)
+                        {
+                            var components = sceneObjects[sceneObjectIndex].GetComponents<MonoBehaviour>().ToList();
+                            components.AddRange(sceneObjects[sceneObjectIndex].GetComponentsInChildren<MonoBehaviour>());
+
+                            for (int componentIndex = 0; componentIndex < components.Count; componentIndex++)
+                            {
+                                SerializedObject serializedObject = new SerializedObject(components[componentIndex]);
+                                PropertyInfo inspectorModeInfo = typeof(SerializedObject).
+                                    GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                                inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
+
+                                SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
+
+                                int localId = localIdProp.intValue;
+
+                                if (localId == objectIDProperty.intValue)
+                                {
+                                    objects.Add(components[componentIndex]);
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
             private void SetProperty(SerializedProperty property, UnityEventValueLimit value)
             {
                 if (property.enumValueIndex != (int)value)
@@ -515,6 +591,27 @@ namespace FoldergeistAssets
             private Texture GetTexture()
             {
                 return (Texture)EditorGUIUtility.Load("icons/d__Popup.png");
+            }
+
+            private void GetSubStringBetweenChars(string origin, char start, char end, out string fullMatch, out string insideEncapsulation)
+            {
+                var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
+                fullMatch = match.Groups[0].Value;
+                insideEncapsulation = match.Groups[1].Value;
+            }
+
+            private void GetSubStringsBetweenChars(string origin, char start, char end, out string[] fullMatch, out string[] insideEncapsulation)
+            {
+                var matches = Regex.Matches(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
+                fullMatch = new string[matches.Count];
+                insideEncapsulation = new string[matches.Count];
+
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    fullMatch[i] = matches[i].Groups[0].Value;
+
+                    insideEncapsulation[i] = matches[i].Groups[1].Value;
+                }
             }
         }
     }

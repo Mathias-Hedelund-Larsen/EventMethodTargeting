@@ -8,12 +8,6 @@ namespace FoldergeistAssets
         [AttributeUsage(AttributeTargets.Field)]
         public class EventMethodTargetAttribute : PropertyAttribute
         {
-            public string UniqueID { get; }
-
-            public EventMethodTargetAttribute(string uniqueID)
-            {
-                UniqueID = uniqueID;
-            }
         }
     }
 }
