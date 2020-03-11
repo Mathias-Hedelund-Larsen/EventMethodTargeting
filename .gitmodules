@@ -1,0 +1,6 @@
+[submodule "GitSubmodules/AssetProcessing"]
+	path = GitSubmodules/AssetProcessing
+	url = https://github.com/Mathias-Hedelund-Larsen/AssetProcessing.git
+[submodule "GitSubmodules/EditorCoroutines"]
+	path = GitSubmodules/EditorCoroutines
+	url = https://github.com/Mathias-Hedelund-Larsen/EditorCoroutines.git
