@@ -315,7 +315,7 @@ namespace FoldergeistAssets
                             {
                                 case PersistentListenerMode.Void:
 
-                                    if (methods[i].GetParameters().Count() == 0)
+                                    if (methods[i].GetParameters().Count() == 0 && methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -324,7 +324,7 @@ namespace FoldergeistAssets
                                 case PersistentListenerMode.Object:
 
                                     if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType.IsSubclassOf(typeof(UnityEngine.Object)) ||
-                                        p.ParameterType == typeof(UnityEngine.Object)))
+                                        p.ParameterType == typeof(UnityEngine.Object)) && methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -332,7 +332,8 @@ namespace FoldergeistAssets
                                     break;
                                 case PersistentListenerMode.Int:
 
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(int)))
+                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(int)) && 
+                                        methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -340,7 +341,8 @@ namespace FoldergeistAssets
                                     break;
                                 case PersistentListenerMode.Float:
 
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(float)))
+                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(float)) && 
+                                        methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -348,7 +350,8 @@ namespace FoldergeistAssets
                                     break;
                                 case PersistentListenerMode.String:
 
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(string)))
+                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(string)) && 
+                                        methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -356,7 +359,7 @@ namespace FoldergeistAssets
                                     break;
                                 case PersistentListenerMode.Bool:
 
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(bool)))
+                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(bool)) && methods[i].ReturnType == typeof(void))
                                     {
                                         availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                     }
@@ -406,7 +409,8 @@ namespace FoldergeistAssets
                                         for (int y = 0; y < fields.Length; y++)
                                         {
                                             if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().
-                                                Any(p => p.ParameterType == fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<>)).GetGenericArguments()[0]))
+                                                Any(p => p.ParameterType == fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<>)).GetGenericArguments()[0]) && 
+                                                methods[i].ReturnType == typeof(void))
                                             {
                                                 availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                             }
@@ -420,7 +424,8 @@ namespace FoldergeistAssets
                                             var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
                                             var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,>)).GetGenericArguments();
 
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes))
+                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
+                                                methods[i].ReturnType == typeof(void))
                                             {
                                                 availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                             }
@@ -434,7 +439,8 @@ namespace FoldergeistAssets
                                             var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
                                             var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,>)).GetGenericArguments();
 
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes))
+                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
+                                                methods[i].ReturnType == typeof(void))
                                             {
                                                 availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                             }
@@ -448,7 +454,8 @@ namespace FoldergeistAssets
                                             var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
                                             var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,,>)).GetGenericArguments();
 
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes))
+                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
+                                                methods[i].ReturnType == typeof(void))
                                             {
                                                 availableMethods.Add($"{accessibility}.{methods[i].Name}");
                                             }
@@ -567,7 +574,14 @@ namespace FoldergeistAssets
 
                                 if (localId == objectIDProperty.intValue)
                                 {
-                                    objects.Add(components[componentIndex]);
+                                    if (components[componentIndex] is EventMethodTargetOnUIChild)
+                                    {
+                                        objects.Add(components[componentIndex].GetComponentInParent<Selectable>());
+                                    }
+                                    else
+                                    {
+                                        objects.Add(components[componentIndex]);
+                                    }
                                     break;
                                 }
                             }

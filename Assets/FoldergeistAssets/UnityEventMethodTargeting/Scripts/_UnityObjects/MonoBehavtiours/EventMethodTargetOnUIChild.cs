@@ -14,11 +14,9 @@ namespace FoldergeistAssets
 {
     namespace UnityEventMethodTargeting
     {
-        [ExecuteAlways]
+        [ExecuteAlways, DisallowMultipleComponent]
         public sealed class EventMethodTargetOnUIChild : MonoBehaviour
         {
-            //public TargetMethodData[] TargetMethods { get => _targetMethods; }
-
 #if UNITY_EDITOR
 #pragma warning disable 0649
 

@@ -7,12 +7,14 @@ using System.Collections;
 using UnityEngine.Events;
 using UnityEditorInternal;
 using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityEditor.Experimental.SceneManagement;
 
 namespace FoldergeistAssets
 {
     namespace UnityEventMethodTargeting
     {
-        [CustomPropertyDrawer(typeof(UnityEngine.UI.Button.ButtonClickedEvent), true)]
+        [CustomPropertyDrawer(typeof(Button.ButtonClickedEvent), true)]
 
         public class ButtonEventPropertyDrawer : PropertyDrawer
         {
@@ -139,82 +141,140 @@ namespace FoldergeistAssets
 
                 new UnityEventDrawer().OnGUI(position, property, label);
 
-                if (property.serializedObject.targetObject is Component && (property.serializedObject.targetObject as Component).GetComponentInChildren<EventMethodTargetOnUIChild>() &&
-                    EditorGUI.EndChangeCheck())
+                if (property.serializedObject.targetObject is Button)
                 {
-                    _target = property.serializedObject;
-                    EditorApplication.delayCall += SetPrivateMethodOnEvent;
+                    if ((property.serializedObject.targetObject as Button).GetComponentInChildren<EventMethodTargetOnUIChild>() && EditorGUI.EndChangeCheck())
+                    {
+                        _target = new SerializedObject(property.serializedObject.targetObject);
+                        EditorApplication.delayCall += SetTargetMethodOnEventDelayed;
+                    }
                 }
             }
 
-            private void SetPrivateMethodOnEvent()
+            private void SetTargetMethodOnEventDelayed()
             {
-                EditorApplication.delayCall -= SetPrivateMethodOnEvent;
-                var methodTargets = (_target.targetObject as Component).GetComponentInChildren<EventMethodTargetOnUIChild>();
+                EditorApplication.delayCall -= SetTargetMethodOnEventDelayed;
 
-                //for (int i = 0; i < methodTargets.TargetMethods.Length; i++)
-                //{
-                //    var methodTarget = methodTargets.TargetMethods[i];
+                if (_target != null && _target.targetObject)
+                {
+                    var eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                          AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
 
-                //    string targetMethod = methodTarget.MethodName;
+                    var methodTargetingData = (EventMethodData[])typeof(EventMethodTargetingData).GetField("_methodTargetingData", BindingFlags.Instance | BindingFlags.NonPublic).
+                        GetValue(eventMethodTargetingAsset);
 
-                //    var persistentCallGroupField = typeof(UnityEventBase).GetField("m_PersistentCalls", BindingFlags.NonPublic | BindingFlags.Instance);
-                //    var callsField = persistentCallGroupField.FieldType.GetField("m_Calls", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var objectIDField = typeof(EventMethodData).GetField("_objectID", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var targetMethodsField = typeof(EventMethodData).GetField("_targetMethods", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                //    var persistantCallType = callsField.FieldType.GetGenericArguments()[0];
-                //    var targetObjectField = persistantCallType.GetField("m_Target", BindingFlags.NonPublic | BindingFlags.Instance);
-                //    var methodNameField = persistantCallType.GetField("m_MethodName", BindingFlags.NonPublic | BindingFlags.Instance);
-                //    var modeField = persistantCallType.GetField("m_Mode", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var target = (_target.targetObject as Component).GetComponentInChildren<EventMethodTargetOnUIChild>();
 
-                //    var persistentCallGroupInstance = persistentCallGroupField.GetValue(fieldInfo.GetValue(_target.targetObject) as UnityEventBase);
+                    string serializedObjectGuid = "";
+                    int serializedObjectID = 0;
 
-                //    IList calls = (IList)callsField.GetValue(persistentCallGroupInstance);
+                    if (_target.targetObject is ScriptableObject || AssetDatabase.Contains((_target.targetObject as Component).transform.root.gameObject))
+                    {
+                        serializedObjectGuid = "None";
+                        serializedObjectID = target.GetInstanceID();
+                    }
+                    else if (PrefabStageUtility.GetCurrentPrefabStage() != null)
+                    {
+                        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabStageUtility.GetCurrentPrefabStage().prefabAssetPath);
 
-                //    if (calls.Count > i)
-                //    {
-                //        var callElement = calls[i];
+                        serializedObjectGuid = "None";
+                        serializedObjectID = prefab.GetComponentInChildren<EventMethodTargetOnUIChild>().GetInstanceID();
+                    }
+                    else
+                    {
+                        SerializedObject serializedObject = new SerializedObject(target);
+                        PropertyInfo inspectorModeInfo = typeof(SerializedObject).
+                            GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                //        var objectTargetForEvent = targetObjectField.GetValue(callElement);
+                        inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
 
-                //        if (objectTargetForEvent == null || objectTargetForEvent.ToString() == "null" || objectTargetForEvent.GetType() == methodTarget.Ontype)
-                //        {
-                //            var initialTarget = _searchForSwitch[methodTarget.SearchFor].Invoke(methodTarget, (_target.targetObject as Component).gameObject);
+                        SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
 
-                //            if (initialTarget)
-                //            {
-                //                modeField.SetValue(callElement, methodTarget.ListenerMode);
-                //                targetObjectField.SetValue(callElement, initialTarget);
-                //                methodNameField.SetValue(callElement, targetMethod);
-                //            }
-                //            else
-                //            {
-                //                Debug.LogError($"Couldnt find asset of type {methodTarget.Ontype}");
-                //            }
-                //        }
+                        serializedObjectGuid= AssetDatabase.AssetPathToGUID(target.gameObject.scene.path);
+                        serializedObjectID= localIdProp.intValue;
+                    }
 
-                //        var argumentsField = persistantCallType.GetField("m_Arguments", BindingFlags.NonPublic | BindingFlags.Instance);
-                //        var arguments = argumentsField.GetValue(callElement);
+                    List<TargetMethodData> targetMethods = new List<TargetMethodData>();
 
-                //        FieldInfo argumentField = _argumentField[methodTarget.ListenerMode].Invoke(arguments);
+                    for (int i = 0; i < methodTargetingData.Length; i++)
+                    {
+                        string guid = (string)guidField.GetValue(methodTargetingData[i]);
+                        int objectID = (int)objectIDField.GetValue(methodTargetingData[i]);
 
-                //        if (argumentField != null)
-                //        {
-                //            var fieldValue = argumentField.GetValue(arguments);
+                        if (guid == serializedObjectGuid && objectID == serializedObjectID)
+                        {
+                            targetMethods.AddRange((TargetMethodData[])targetMethodsField.GetValue(methodTargetingData[i]));
+                        }
+                    }
 
-                //            var limitation = methodTarget.Limitation;
+                    for (int i = 0; i < targetMethods.Count; i++)
+                    {
+                        var methodTarget = targetMethods[i];
 
-                //            if (limitation.Length > 0 && !limitation.Contains(fieldValue))
-                //            {
-                //                argumentField.SetValue(arguments, methodTarget.Limitation[0]);
+                        string targetMethod = methodTarget.MethodName;
 
-                //                Debug.LogWarning("You cant change the value outside the limitations of the PrivateMethodTarget");
-                //            }
-                //        }
-                //    }
-                //}
+                        var persistentCallGroupField = typeof(UnityEventBase).GetField("m_PersistentCalls", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var callsField = persistentCallGroupField.FieldType.GetField("m_Calls", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                _target.ApplyModifiedProperties();
-                AssetDatabase.SaveAssets();
+                        var persistantCallType = callsField.FieldType.GetGenericArguments()[0];
+                        var targetObjectField = persistantCallType.GetField("m_Target", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var methodNameField = persistantCallType.GetField("m_MethodName", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var modeField = persistantCallType.GetField("m_Mode", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        var persistentCallGroupInstance = persistentCallGroupField.GetValue(fieldInfo.GetValue(_target.targetObject) as UnityEventBase);
+
+                        IList calls = (IList)callsField.GetValue(persistentCallGroupInstance);
+
+                        if (calls.Count > i)
+                        {
+                            var callElement = calls[i];
+
+                            var objectTargetForEvent = targetObjectField.GetValue(callElement);
+
+                            if (objectTargetForEvent == null || objectTargetForEvent.ToString() == "null" || objectTargetForEvent.GetType() == methodTarget.Ontype)
+                            {
+                                var initialTarget = _searchForSwitch[methodTarget.SearchFor].Invoke(methodTarget, (_target.targetObject as Component).gameObject);
+
+                                if (initialTarget)
+                                {
+                                    modeField.SetValue(callElement, methodTarget.ListenerMode);
+                                    targetObjectField.SetValue(callElement, initialTarget);
+                                    methodNameField.SetValue(callElement, targetMethod);
+                                }
+                                else
+                                {
+                                    Debug.LogError($"Couldnt find asset of type {methodTarget.Ontype}");
+                                }
+                            }
+
+                            var argumentsField = persistantCallType.GetField("m_Arguments", BindingFlags.NonPublic | BindingFlags.Instance);
+                            var arguments = argumentsField.GetValue(callElement);
+
+                            FieldInfo argumentField = _argumentField[methodTarget.ListenerMode].Invoke(arguments);
+
+                            if (argumentField != null)
+                            {
+                                var fieldValue = argumentField.GetValue(arguments);
+
+                                var limitation = methodTarget.Limitation;
+
+                                if (limitation.Length > 0 && !limitation.Contains(fieldValue))
+                                {
+                                    argumentField.SetValue(arguments, methodTarget.Limitation[0]);
+
+                                    Debug.LogWarning("You cant change the value outside the limitations of the PrivateMethodTarget");
+                                }
+                            }
+                        }
+                    }
+
+                    _target.ApplyModifiedProperties();
+                    AssetDatabase.SaveAssets();
+                }
             }
         }
     }
