@@ -414,14 +414,7 @@ namespace FoldergeistAssets
                                             GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static).
                                             Invoke(null, new object[] { objectIDProperty.intValue });
 
-                                        if(obj is EventMethodTargetOnUIChild)
-                                        {
-                                            objects.AddRange((obj as EventMethodTargetOnUIChild).GetComponentsInParent<Selectable>());
-                                        }
-                                        else 
-                                        {
                                             objects.Add(obj);
-                                        }
                                     }
 
                                     for (int t = 0; t < objects.Count; t++)
@@ -598,14 +591,7 @@ namespace FoldergeistAssets
 
                                 if (localId == objectIDProperty.intValue)
                                 {
-                                    if (components[componentIndex] is EventMethodTargetOnUIChild)
-                                    {
-                                        objects.Add(components[componentIndex].GetComponentInParent<Selectable>());
-                                    }
-                                    else
-                                    {
-                                        objects.Add(components[componentIndex]);
-                                    }
+                                    objects.Add(components[componentIndex]);
                                     break;
                                 }
                             }

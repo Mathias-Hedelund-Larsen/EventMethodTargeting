@@ -1,5 +1,4 @@
-﻿using FoldergeistAssets.UnityEventMethodTargeting.Internal;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,13 +20,14 @@ namespace FoldergeistAssets
         public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
         {
             private SerializedObject _target;
-            private static int _propertyHeightMultiplier = 1;
             private SerializedObject _eventMethodTargeting;
+            private static int _propertyHeightMultiplier = 1;
             private EventMethodTargetingData _eventMethodTargetingAsset;
-            private FieldInfo _methodTargetingDataField = typeof(EventMethodTargetingData).GetField("_methodTargetingData", BindingFlags.Instance | BindingFlags.NonPublic);
+            private UnityEventDrawer _eventDrawer = new UnityEventDrawer();
             private FieldInfo _guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
             private FieldInfo _objectIDField = typeof(EventMethodData).GetField("_objectID", BindingFlags.Instance | BindingFlags.NonPublic);
             private FieldInfo _targetMethodsField = typeof(EventMethodData).GetField("_targetMethods", BindingFlags.Instance | BindingFlags.NonPublic);
+            private FieldInfo _methodTargetingDataField = typeof(EventMethodTargetingData).GetField("_methodTargetingData", BindingFlags.Instance | BindingFlags.NonPublic);
 
             private readonly Dictionary<SearchFor, Func<TargetMethodData, GameObject, UnityEngine.Object>> _searchForSwitch =
                 new Dictionary<SearchFor, Func<TargetMethodData, GameObject, UnityEngine.Object>>()
@@ -139,15 +139,11 @@ namespace FoldergeistAssets
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
-                if (fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
+                if (fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) ||
+                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
+                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
                 {
-                    return new UnityEventDrawer().GetPropertyHeight(property, label) + (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
-                }
-                else if(fieldInfo.FieldType == typeof(UIEventChild))
-                {
-                    return (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
+                    return _eventDrawer.GetPropertyHeight(property, label) + (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
                 }
                 else
                 {
@@ -157,29 +153,23 @@ namespace FoldergeistAssets
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
-                if (fieldInfo.FieldType == typeof(UIEventChild) || fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
+                if (fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) ||
+                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
+                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
                 {
-                    if (fieldInfo.FieldType != typeof(UIEventChild))
+                    AddDataToEventMethodTargeting(position, property, label, property.serializedObject.targetObject);
+                    position.y += (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
+
+                    EditorGUI.BeginChangeCheck();
+
+                    _eventDrawer.OnGUI(position, property, label);
+
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        AddDataToEventMethodTargeting(position, property, label, property.serializedObject.targetObject);
-                        position.y += (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
-
-                        EditorGUI.BeginChangeCheck();
-
-                        new UnityEventDrawer().OnGUI(position, property, label);
-
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            _target = new SerializedObject(property.serializedObject.targetObject);
-                            EditorApplication.delayCall += SetTargetMethodOnEventDelayed;
-                        }
+                        _target = new SerializedObject(property.serializedObject.targetObject);
+                        EditorApplication.delayCall += SetTargetMethodOnEventDelayed;
                     }
-                    else
-                    {
-                        DrawEventTargeting(position, property, label);
-                    }
+
                 }
                 else
                 {

@@ -8,6 +8,7 @@ namespace FoldergeistAssets
         [AttributeUsage(AttributeTargets.Field)]
         public class EventMethodTargetAttribute : PropertyAttribute
         {
+            public int UniqueIDInScript { get; set; } = 0;
         }
     }
 }
