@@ -16,15 +16,17 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _targetMethods:
-    - _methodName: OnClick
+    - _methodName: TakeInt
       _searchFor: 3
-      _listenerMode: 1
-      _limitationEnumType: 
-      _onType: ButtonCallMethod, Assembly-CSharp
+      _listenerMode: 3
+      _limitationEnumType: FoldergeistAssets.UnityEventMethodTargeting.SearchFor,
+        FoldergeistAssets-UnityEventMethodTargeting
+      _onType: Demo, Assembly-CSharp
       _limit: 0
       _valueObjects: []
-      _valueInts: 
-      _valueFloats: []
+      _valueInts: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+      _valueFloats:
+      - 0
       _valueStrings: []
       _valueBools: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04

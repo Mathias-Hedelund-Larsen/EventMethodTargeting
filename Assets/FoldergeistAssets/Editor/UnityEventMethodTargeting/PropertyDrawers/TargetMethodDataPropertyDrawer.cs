@@ -203,7 +203,8 @@ namespace FoldergeistAssets
                         }
                     }
 
-                    return EditorGUIUtility.singleLineHeight * propertyHeight + (EditorGUIUtility.singleLineHeight / 3.3333334f) * (propertyHeight - 8);
+                    return EditorGUIUtility.singleLineHeight * propertyHeight + EditorGUIUtility.singleLineHeight / 2 + 5 +
+                        (EditorGUIUtility.singleLineHeight / 3.3333334f) * (propertyHeight - 8);
                 }
                 else
                 {
@@ -622,20 +623,6 @@ namespace FoldergeistAssets
                 var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
                 fullMatch = match.Groups[0].Value;
                 insideEncapsulation = match.Groups[1].Value;
-            }
-
-            private void GetSubStringsBetweenChars(string origin, char start, char end, out string[] fullMatch, out string[] insideEncapsulation)
-            {
-                var matches = Regex.Matches(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
-                fullMatch = new string[matches.Count];
-                insideEncapsulation = new string[matches.Count];
-
-                for (int i = 0; i < matches.Count; i++)
-                {
-                    fullMatch[i] = matches[i].Groups[0].Value;
-
-                    insideEncapsulation[i] = matches[i].Groups[1].Value;
-                }
             }
         }
     }

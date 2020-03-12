@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEditor.SceneManagement;
@@ -19,11 +20,12 @@ namespace FoldergeistAssets
 
         public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
         {
+            private float _extraHeight;
             private SerializedObject _target;
             private SerializedObject _eventMethodTargeting;
-            private static int _propertyHeightMultiplier = 1;
             private EventMethodTargetingData _eventMethodTargetingAsset;
             private UnityEventDrawer _eventDrawer = new UnityEventDrawer();
+            private TargetMethodDataPropertyDrawer _targetMethodDataPropertyDrawer = new TargetMethodDataPropertyDrawer();
             private FieldInfo _guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
             private FieldInfo _objectIDField = typeof(EventMethodData).GetField("_objectID", BindingFlags.Instance | BindingFlags.NonPublic);
             private FieldInfo _targetMethodsField = typeof(EventMethodData).GetField("_targetMethods", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -143,11 +145,98 @@ namespace FoldergeistAssets
                     fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
                     fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
                 {
-                    return _eventDrawer.GetPropertyHeight(property, label) + (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
+                     _extraHeight = 0;
+
+                    if (!_eventMethodTargetingAsset)
+                    {
+                        _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                              AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                    }
+
+                    if (_eventMethodTargeting == null)
+                    {
+                        _eventMethodTargeting = new SerializedObject(_eventMethodTargetingAsset);
+                    }                   
+
+                    var methodTargetingDataArray = _eventMethodTargeting.FindProperty("_methodTargetingData");
+
+                    if (methodTargetingDataArray.isExpanded)
+                    {
+                        if (property.serializedObject.targetObject is ScriptableObject ||
+                            AssetDatabase.Contains((property.serializedObject.targetObject as MonoBehaviour).transform.root.gameObject))
+                        {
+                            var effectHeight = FindDataArrayElementForAsset(methodTargetingDataArray, property.serializedObject.targetObject);
+
+                            if (effectHeight != null && effectHeight.isExpanded)
+                            {
+                                for (int i = 0; i < effectHeight.arraySize; i++)
+                                {
+                                    _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(i), label);
+
+                                    if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
+                                    {
+                                        _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+                                    }
+                                }
+                            }
+                        }
+                        else if (PrefabStageUtility.GetCurrentPrefabStage() != null)
+                        {
+                            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabStageUtility.GetCurrentPrefabStage().prefabAssetPath);
+
+                            SerializedProperty effectHeight = null;
+
+                            var components = prefab.GetComponents(property.serializedObject.targetObject.GetType()).ToList();
+
+                            components.AddRange(prefab.GetComponentsInChildren(property.serializedObject.targetObject.GetType()));
+
+                            for (int i = 0; i < components.Count; i++)
+                            {
+                                effectHeight = FindDataArrayElementForAsset(methodTargetingDataArray, components[i]);
+
+                                if (effectHeight != null && effectHeight.isExpanded)
+                                {
+                                    for (int t = 0; t < effectHeight.arraySize; t++)
+                                    {
+                                        _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(t), label);
+
+                                        if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
+                                        {
+                                            _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            int localId = GetLocalFileID(property);
+
+                            var sceneGuid = AssetDatabase.AssetPathToGUID((property.serializedObject.targetObject as MonoBehaviour).gameObject.scene.path);
+
+                            SerializedProperty effectHeight = FindPropertyFromSceneAssetWithID(methodTargetingDataArray, sceneGuid, localId);
+
+                            if (effectHeight != null && effectHeight.isExpanded)
+                            {
+                                for (int i = 0; i < effectHeight.arraySize; i++)
+                                {
+                                    _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(i), label);
+
+                                    if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
+                                    {
+                                        _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+                                    }
+                                }
+                            }                            
+                        }
+                    }
+                    return _eventDrawer.GetPropertyHeight(property, label) + (EditorGUIUtility.singleLineHeight + 5) + _extraHeight;
                 }
                 else
                 {
-                    return 0;
+                    return EditorGUIUtility.singleLineHeight + 5;
                 }
             }
 
@@ -158,14 +247,14 @@ namespace FoldergeistAssets
                     fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
                 {
                     AddDataToEventMethodTargeting(position, property, label, property.serializedObject.targetObject);
-                    position.y += (EditorGUIUtility.singleLineHeight + 5) * _propertyHeightMultiplier;
+                    position.y += (EditorGUIUtility.singleLineHeight + 5) + _extraHeight;
 
                     EditorGUI.BeginChangeCheck();
 
                     _eventDrawer.OnGUI(position, property, label);
 
                     if (EditorGUI.EndChangeCheck())
-                    {
+                    {                        
                         _target = new SerializedObject(property.serializedObject.targetObject);
                         EditorApplication.delayCall += SetTargetMethodOnEventDelayed;
                     }
@@ -175,6 +264,13 @@ namespace FoldergeistAssets
                 {
                     Debug.LogError("Only add the EventMethodTargetAttribute to UnityEvents also the generic ones");
                 }
+            }
+
+            private void GetSubStringBetweenChars(string origin, char start, char end, out string fullMatch, out string insideEncapsulation)
+            {
+                var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
+                fullMatch = match.Groups[0].Value;
+                insideEncapsulation = match.Groups[1].Value;
             }
 
             private void AddDataToEventMethodTargeting(Rect position, SerializedProperty property, GUIContent label, UnityEngine.Object targetObject)
@@ -305,8 +401,6 @@ namespace FoldergeistAssets
 
                     if (toBeDrawn != null)
                     {
-                        ToBeDrawPropertyHeightModification(toBeDrawn);
-
                         EditorGUI.PropertyField(position, toBeDrawn, new GUIContent("TargetMethods"), true);
                     }
                     else
@@ -344,8 +438,6 @@ namespace FoldergeistAssets
 
                     if (toBeDrawn != null)
                     {
-                        ToBeDrawPropertyHeightModification(toBeDrawn);
-
                         EditorGUI.PropertyField(position, toBeDrawn, new GUIContent("TargetMethods"), true);
                     }
                     else
@@ -361,27 +453,17 @@ namespace FoldergeistAssets
                     }
                 }
                 else
-                {
-                    SerializedObject serializedObject = new SerializedObject(property.serializedObject.targetObject);
-                    PropertyInfo inspectorModeInfo = typeof(SerializedObject).
-                        GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
-
-                    SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
-
-                    int localId = localIdProp.intValue;
+                {                    
+                    int localId = GetLocalFileID(property);
 
                     var sceneGuid = AssetDatabase.AssetPathToGUID((property.serializedObject.targetObject as MonoBehaviour).gameObject.scene.path);
 
-                    SerializedProperty toBeDrawn = FindProeprtyFromSceneAssetWithID(methodTargetingDataArray, sceneGuid, localId);
+                    SerializedProperty toBeDrawn = FindPropertyFromSceneAssetWithID(methodTargetingDataArray, sceneGuid, localId);
 
                     EditorGUI.BeginChangeCheck();
 
                     if (toBeDrawn != null)
                     {
-                        ToBeDrawPropertyHeightModification(toBeDrawn);
-
                         EditorGUI.PropertyField(position, toBeDrawn, new GUIContent("TargetMethods"), true);
                     }
                     else
@@ -398,7 +480,20 @@ namespace FoldergeistAssets
                 }
             }
 
-            private SerializedProperty FindProeprtyFromSceneAssetWithID(SerializedProperty methodTargetingDataArray, string sceneGuid, int objectID)
+            private int GetLocalFileID(SerializedProperty property)
+            {
+                SerializedObject serializedObject = new SerializedObject(property.serializedObject.targetObject);
+                PropertyInfo inspectorModeInfo = typeof(SerializedObject).
+                    GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
+
+                SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
+
+                return localIdProp.intValue;
+            }
+
+            private SerializedProperty FindPropertyFromSceneAssetWithID(SerializedProperty methodTargetingDataArray, string sceneGuid, int objectID)
             {
                 for (int i = methodTargetingDataArray.arraySize - 1; i >= 0; i--)
                 {
@@ -412,26 +507,6 @@ namespace FoldergeistAssets
                 }
 
                 return null;
-            }
-
-            private void ToBeDrawPropertyHeightModification(SerializedProperty toBeDrawn)
-            {
-                if (toBeDrawn.isExpanded)
-                {
-                    _propertyHeightMultiplier = (toBeDrawn.arraySize) + 2;
-
-                    for (int i = 0; i < toBeDrawn.arraySize; i++)
-                    {
-                        if (toBeDrawn.GetArrayElementAtIndex(i).isExpanded)
-                        {
-                            _propertyHeightMultiplier += 5;
-                        }
-                    }
-                }
-                else
-                {
-                    _propertyHeightMultiplier = 1;
-                }
             }
 
             private SerializedProperty FindDataArrayElementForAsset(SerializedProperty methodTargetingDataArray, UnityEngine.Object targetObject)
