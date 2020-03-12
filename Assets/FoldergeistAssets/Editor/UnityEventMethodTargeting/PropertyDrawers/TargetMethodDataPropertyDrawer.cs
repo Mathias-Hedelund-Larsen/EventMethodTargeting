@@ -179,7 +179,7 @@ namespace FoldergeistAssets
             {
                 if (property.isExpanded)
                 {
-                    int propertyHeight = 8;
+                    int propertyHeight = 6;
                     var limit = (UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex;
 
                     if(limit == UnityEventValueLimit.Array)
@@ -203,8 +203,7 @@ namespace FoldergeistAssets
                         }
                     }
 
-                    return EditorGUIUtility.singleLineHeight * propertyHeight + EditorGUIUtility.singleLineHeight / 2 + 5 +
-                        (EditorGUIUtility.singleLineHeight / 3.3333334f) * (propertyHeight - 8);
+                    return (EditorGUIUtility.singleLineHeight + 5) * propertyHeight;
                 }
                 else
                 {

@@ -169,14 +169,11 @@ namespace FoldergeistAssets
 
                             if (effectHeight != null && effectHeight.isExpanded)
                             {
+                                _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+
                                 for (int i = 0; i < effectHeight.arraySize; i++)
                                 {
                                     _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(i), label);
-
-                                    if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
-                                    {
-                                        _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
-                                    }
                                 }
                             }
                         }
@@ -196,14 +193,11 @@ namespace FoldergeistAssets
 
                                 if (effectHeight != null && effectHeight.isExpanded)
                                 {
+                                    _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+
                                     for (int t = 0; t < effectHeight.arraySize; t++)
                                     {
                                         _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(t), label);
-
-                                        if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
-                                        {
-                                            _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
-                                        }
                                     }
 
                                     break;
@@ -220,18 +214,16 @@ namespace FoldergeistAssets
 
                             if (effectHeight != null && effectHeight.isExpanded)
                             {
+                                _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
+
                                 for (int i = 0; i < effectHeight.arraySize; i++)
                                 {
                                     _extraHeight += _targetMethodDataPropertyDrawer.GetPropertyHeight(effectHeight.GetArrayElementAtIndex(i), label);
-
-                                    if (!effectHeight.GetArrayElementAtIndex(i).isExpanded)
-                                    {
-                                        _extraHeight += (EditorGUIUtility.singleLineHeight + 5);
-                                    }
                                 }
                             }                            
                         }
                     }
+
                     return _eventDrawer.GetPropertyHeight(property, label) + (EditorGUIUtility.singleLineHeight + 5) + _extraHeight;
                 }
                 else
