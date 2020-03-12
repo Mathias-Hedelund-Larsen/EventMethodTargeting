@@ -13,30 +13,42 @@ MonoBehaviour:
   m_Name: EventMethodTargetingData
   m_EditorClassIdentifier: 
   _methodTargetingData:
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 968356996
+  - _sceneGuid: 23a8aedd67ba14d4dbcea0dfad05f8f9
+    _objectID: 1569617610
     _targetMethods:
-    - _methodName: TakeInt
-      _searchFor: 3
-      _listenerMode: 3
-      _limitationEnumType: FoldergeistAssets.UnityEventMethodTargeting.SearchFor,
-        FoldergeistAssets-UnityEventMethodTargeting
-      _onType: Demo, Assembly-CSharp
-      _limit: 0
-      _valueObjects: []
-      _valueInts: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
-      _valueFloats:
-      - 0
-      _valueStrings: []
-      _valueBools: 
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 99311085
-    _targetMethods:
-    - _methodName: TakeFloat
-      _searchFor: 3
+    - _methodName: set_MasterVolume
+      _searchFor: 0
       _listenerMode: 0
       _limitationEnumType: 
-      _onType: ButtonCallMethod, Assembly-CSharp
+      _onType: FoldergeistAssets.SettingsManagement.Settings, FoldergeistAsset-Settings
+      _limit: 0
+      _valueObjects: []
+      _valueInts: 
+      _valueFloats: []
+      _valueStrings: []
+      _valueBools: 
+  - _sceneGuid: 23a8aedd67ba14d4dbcea0dfad05f8f9
+    _objectID: 2129375586
+    _targetMethods:
+    - _methodName: set_MusicVolume
+      _searchFor: 0
+      _listenerMode: 0
+      _limitationEnumType: 
+      _onType: FoldergeistAssets.SettingsManagement.Settings, FoldergeistAsset-Settings
+      _limit: 0
+      _valueObjects: []
+      _valueInts: 
+      _valueFloats: []
+      _valueStrings: []
+      _valueBools: 
+  - _sceneGuid: 23a8aedd67ba14d4dbcea0dfad05f8f9
+    _objectID: 2067436785
+    _targetMethods:
+    - _methodName: set_SoundEffectsVolume
+      _searchFor: 0
+      _listenerMode: 0
+      _limitationEnumType: 
+      _onType: FoldergeistAssets.SettingsManagement.Settings, FoldergeistAsset-Settings
       _limit: 0
       _valueObjects: []
       _valueInts: 

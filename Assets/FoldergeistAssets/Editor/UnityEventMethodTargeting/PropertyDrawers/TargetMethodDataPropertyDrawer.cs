@@ -275,8 +275,7 @@ namespace FoldergeistAssets
                     {
                         displayTypeNames.Clear();
                         typeNames.Clear();
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).
-                            Where(a => a.FullName.Contains("Assembly-CSharp") || a.FullName.Contains("FoldergeistAssets")).ToList();
+                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).ToList();
 
                         for (int i = 0; i < assemblies.Count; i++)
                         {
