@@ -17,7 +17,7 @@ MonoBehaviour:
     _objectID: 1272014524
     _targetMethods:
     - _methodName: TakeFloat
-      _searchFor: 3
+      _searchFor: 2
       _listenerMode: 0
       _limitationEnumType: 
       _onType: ButtonCallMethod, Assembly-CSharp

@@ -22,6 +22,12 @@ namespace FoldergeistAssets
         {
             private SerializedObject _target;
             private static int _propertyHeightMultiplier = 1;
+            private SerializedObject _eventMethodTargeting;
+            private EventMethodTargetingData _eventMethodTargetingAsset;
+            private FieldInfo _methodTargetingDataField = typeof(EventMethodTargetingData).GetField("_methodTargetingData", BindingFlags.Instance | BindingFlags.NonPublic);
+            private FieldInfo _guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
+            private FieldInfo _objectIDField = typeof(EventMethodData).GetField("_objectID", BindingFlags.Instance | BindingFlags.NonPublic);
+            private FieldInfo _targetMethodsField = typeof(EventMethodData).GetField("_targetMethods", BindingFlags.Instance | BindingFlags.NonPublic);
 
             private readonly Dictionary<SearchFor, Func<TargetMethodData, GameObject, UnityEngine.Object>> _searchForSwitch =
                 new Dictionary<SearchFor, Func<TargetMethodData, GameObject, UnityEngine.Object>>()
@@ -183,10 +189,13 @@ namespace FoldergeistAssets
 
             private void AddDataToEventMethodTargeting(Rect position, SerializedProperty property, GUIContent label, UnityEngine.Object targetObject)
             {
-                var eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(
-                       AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                if (!_eventMethodTargetingAsset)
+                {
+                    _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                          AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                }
 
-                SerializedObject eventMethodTargeting = new SerializedObject(eventMethodTargetingAsset);
+                SerializedObject eventMethodTargeting = new SerializedObject(_eventMethodTargetingAsset);
                 var methodTargetingDataArray = eventMethodTargeting.FindProperty("_methodTargetingData");
 
                 if (AssetDatabase.Contains(targetObject))
@@ -202,7 +211,7 @@ namespace FoldergeistAssets
                         eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = "None";
                         eventMethodData.FindPropertyRelative("_objectID").intValue = targetObject.GetInstanceID();
 
-                        EditorUtility.SetDirty(eventMethodTargetingAsset);
+                        EditorUtility.SetDirty(_eventMethodTargetingAsset);
                         eventMethodTargeting.ApplyModifiedProperties();
                     }
 
@@ -231,7 +240,7 @@ namespace FoldergeistAssets
                             eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = "None";
                             eventMethodData.FindPropertyRelative("_objectID").intValue = targetObject.GetInstanceID();
 
-                            EditorUtility.SetDirty(eventMethodTargetingAsset);
+                            EditorUtility.SetDirty(_eventMethodTargetingAsset);
                             eventMethodTargeting.ApplyModifiedProperties();
                         }
 
@@ -265,7 +274,7 @@ namespace FoldergeistAssets
                             eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = AssetDatabase.AssetPathToGUID(gameObject.scene.path);
                             eventMethodData.FindPropertyRelative("_objectID").intValue = localId;
 
-                            EditorUtility.SetDirty(eventMethodTargetingAsset);
+                            EditorUtility.SetDirty(_eventMethodTargetingAsset);
                             eventMethodTargeting.ApplyModifiedProperties();
                             DrawEventTargeting(position, property, label);
                         };
@@ -284,11 +293,18 @@ namespace FoldergeistAssets
 
             private void DrawEventTargeting(Rect position, SerializedProperty property, GUIContent label)
             {
-                var eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
-                       AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                if (!_eventMethodTargetingAsset)
+                {
+                    _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                          AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                }
 
-                SerializedObject eventMethodTargeting = new SerializedObject(eventMethodTargetingAsset);
-                var methodTargetingDataArray = eventMethodTargeting.FindProperty("_methodTargetingData");
+                if (_eventMethodTargeting == null)
+                {
+                    _eventMethodTargeting = new SerializedObject(_eventMethodTargetingAsset);
+                }
+
+                var methodTargetingDataArray = _eventMethodTargeting.FindProperty("_methodTargetingData");
 
                 if(property.serializedObject.targetObject is ScriptableObject || 
                     AssetDatabase.Contains((property.serializedObject.targetObject as MonoBehaviour).transform.root.gameObject))
@@ -310,8 +326,8 @@ namespace FoldergeistAssets
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        EditorUtility.SetDirty(eventMethodTargetingAsset);
-                        eventMethodTargeting.ApplyModifiedProperties();
+                        EditorUtility.SetDirty(_eventMethodTargetingAsset);
+                        _eventMethodTargeting.ApplyModifiedProperties();
                         AssetDatabase.SaveAssets();
                     }
                 }
@@ -349,8 +365,8 @@ namespace FoldergeistAssets
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        EditorUtility.SetDirty(eventMethodTargetingAsset);
-                        eventMethodTargeting.ApplyModifiedProperties();
+                        EditorUtility.SetDirty(_eventMethodTargetingAsset);
+                        _eventMethodTargeting.ApplyModifiedProperties();
                         AssetDatabase.SaveAssets();
                     }
                 }
@@ -385,8 +401,8 @@ namespace FoldergeistAssets
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        EditorUtility.SetDirty(eventMethodTargetingAsset);
-                        eventMethodTargeting.ApplyModifiedProperties();
+                        EditorUtility.SetDirty(_eventMethodTargetingAsset);
+                        _eventMethodTargeting.ApplyModifiedProperties();
                         AssetDatabase.SaveAssets();
                     }
                 }
@@ -466,15 +482,13 @@ namespace FoldergeistAssets
 
                 if (_target != null && _target.targetObject)
                 {
-                    var eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
-                          AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                    if (!_eventMethodTargetingAsset)
+                    {
+                        _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                              AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
+                    }
 
-                    var methodTargetingData = (EventMethodData[])typeof(EventMethodTargetingData).GetField("_methodTargetingData", BindingFlags.Instance | BindingFlags.NonPublic).
-                        GetValue(eventMethodTargetingAsset);
-
-                    var guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var objectIDField = typeof(EventMethodData).GetField("_objectID", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var targetMethodsField = typeof(EventMethodData).GetField("_targetMethods", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var methodTargetingData = (EventMethodData[])_methodTargetingDataField.GetValue(_eventMethodTargetingAsset);               
 
                     var target = _target.targetObject;
 
@@ -511,12 +525,12 @@ namespace FoldergeistAssets
 
                     for (int i = 0; i < methodTargetingData.Length; i++)
                     {
-                        string guid = (string)guidField.GetValue(methodTargetingData[i]);
-                        int objectID = (int)objectIDField.GetValue(methodTargetingData[i]);
+                        string guid = (string)_guidField.GetValue(methodTargetingData[i]);
+                        int objectID = (int)_objectIDField.GetValue(methodTargetingData[i]);
 
                         if (guid == serializedObjectGuid && objectID == serializedObjectID)
                         {
-                            targetMethods.AddRange((TargetMethodData[])targetMethodsField.GetValue(methodTargetingData[i]));
+                            targetMethods.AddRange((TargetMethodData[])_targetMethodsField.GetValue(methodTargetingData[i]));
                         }
                     }
 

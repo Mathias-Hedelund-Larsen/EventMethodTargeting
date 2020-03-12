@@ -172,6 +172,9 @@ namespace FoldergeistAssets
             }
                 };
 
+            private List<string> typeNames = new List<string>();
+            private List<string> displayTypeNames = new List<string>();
+
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
                 if (property.isExpanded)
@@ -216,38 +219,12 @@ namespace FoldergeistAssets
 
                     EditorGUI.PropertyField(position, property);
 
-                    position.y += EditorGUIUtility.singleLineHeight + 5;
-
-                    List<string> typeNames = new List<string>();
-                    List<string> displayTypeNames = new List<string>();
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).
-                        Where(a => a.FullName.Contains("Assembly-CSharp") || a.FullName.Contains("FoldergeistAssets")).ToList();
+                    position.y += EditorGUIUtility.singleLineHeight + 5;                    
 
                     var searchFor = property.FindPropertyRelative("_searchFor");
 
-                    Type targetSubclassParent = typeof(Component);
-
-                    if ((SearchFor)searchFor.enumValueIndex == SearchFor.Asset)
-                    {
-                        targetSubclassParent = typeof(ScriptableObject);
-                    }
-
-                    for (int i = 0; i < assemblies.Count; i++)
-                    {
-                        var assemblyClasses = assemblies[i].GetTypes();
-
-                        for (int t = 0; t < assemblyClasses.Length; t++)
-                        {
-                            if (!assemblyClasses[t].IsGenericType && !assemblyClasses[t].IsAbstract && assemblyClasses[t].IsSubclassOf(targetSubclassParent))
-                            {
-                                string[] display = assemblyClasses[t].ToString().Split('.');
-
-                                displayTypeNames.Add(display[display.Length - 1]);
-                                typeNames.Add($"{assemblyClasses[t].FullName}, {assemblies[i].FullName.Split(',')[0]}");
-                            }
-                        }
-                    }
-
+                    Type targetSubclassParent = typeof(Component);                   
+                    
                     List<string> availableSearchForValues = new List<string>();
 
                     foreach (SearchFor item in Enum.GetValues(typeof(SearchFor)))
@@ -278,9 +255,45 @@ namespace FoldergeistAssets
                             availableSearchForValues.Add(item.ToString());
                         }
                     }
+                    int oldEnumValueIndex = searchFor.enumValueIndex;
 
                     searchFor.enumValueIndex = EditorGUI.Popup(position, "SearchFor", searchFor.enumValueIndex, availableSearchForValues.ToArray());
                     position.y += EditorGUIUtility.singleLineHeight + 5;
+                    bool markedForChange = false;
+
+                    if ((SearchFor)searchFor.enumValueIndex == SearchFor.Asset)
+                    {
+                        targetSubclassParent = typeof(ScriptableObject);
+                    }
+
+                    if(oldEnumValueIndex == 0 && searchFor.enumValueIndex > 0 || searchFor.enumValueIndex == 0 && oldEnumValueIndex > 0)
+                    {
+                        markedForChange = true;
+                    }
+
+                    if (displayTypeNames.Count == 0 && typeNames.Count == 0 || markedForChange)
+                    {
+                        displayTypeNames.Clear();
+                        typeNames.Clear();
+                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).
+                            Where(a => a.FullName.Contains("Assembly-CSharp") || a.FullName.Contains("FoldergeistAssets")).ToList();
+
+                        for (int i = 0; i < assemblies.Count; i++)
+                        {
+                            var assemblyClasses = assemblies[i].GetTypes();
+
+                            for (int t = 0; t < assemblyClasses.Length; t++)
+                            {
+                                if (!assemblyClasses[t].IsGenericType && !assemblyClasses[t].IsAbstract && assemblyClasses[t].IsSubclassOf(targetSubclassParent))
+                                {
+                                    string[] display = assemblyClasses[t].ToString().Split('.');
+
+                                    displayTypeNames.Add(display[display.Length - 1]);
+                                    typeNames.Add($"{assemblyClasses[t].FullName}, {assemblies[i].FullName.Split(',')[0]}");
+                                }
+                            }
+                        }
+                    }                                   
 
                     var listenerMode = property.FindPropertyRelative("_listenerMode");
 
@@ -309,7 +322,6 @@ namespace FoldergeistAssets
                     if (typeNames.Count > index)
                     {
                         onTypeProperty.stringValue = typeNames[index];
-
 
                         position.y += EditorGUIUtility.singleLineHeight + 5;
 
@@ -479,7 +491,8 @@ namespace FoldergeistAssets
 
                         var methodName = property.FindPropertyRelative("_methodName");
 
-                        int methodNameIndex = availableMethods.Contains(methodName.stringValue) ? availableMethods.IndexOf(methodName.stringValue) : 0;
+                        int methodNameIndex = availableMethods.Any(m => m.Split('.')[1] == methodName.stringValue) ?
+                            availableMethods.IndexOf(availableMethods.Find(m => m.Split('.')[1] == methodName.stringValue)) : 0;
 
                         if (availableMethods.Count > 0)
                         {
