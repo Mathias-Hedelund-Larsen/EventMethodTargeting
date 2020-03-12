@@ -20,14 +20,14 @@ namespace FoldergeistAssets
             private readonly Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>> _drawLimitedField =
                 new Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>>()
                 {
-            {
-                UnityEventValueLimit.None, (pos, property, listenerMode) =>
-                {
-                    GUI.enabled = false;
-                    EditorGUI.TextField(pos, "Limitation", "None");
-                    GUI.enabled = true;
-                }
-            },
+                    {
+                        UnityEventValueLimit.None, (pos, property, listenerMode) =>
+                        {
+                            GUI.enabled = false;
+                            EditorGUI.TextField(pos, "Limitation", "None");
+                            GUI.enabled = true;
+                        }
+                    },
             {
                 UnityEventValueLimit.SingleValue, (pos, property, listenerMode) =>
                 {
