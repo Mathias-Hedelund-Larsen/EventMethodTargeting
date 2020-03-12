@@ -18,8 +18,6 @@ namespace FoldergeistAssets
 
         public class TargetMethodDataPropertyDrawer : PropertyDrawer
         {
-            private static int _propertyHeight = 7;
-
             private readonly Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>> _drawLimitedField =
                 new Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>>()
                 {
@@ -87,8 +85,6 @@ namespace FoldergeistAssets
 
                             for (int i = 0; i < valueObject.arraySize; i++)
                             {
-                                _propertyHeight++;
-
                                 pos.y += EditorGUIUtility.singleLineHeight + 5;
                                  valueObject.GetArrayElementAtIndex(i).objectReferenceValue = EditorGUI.ObjectField(pos, "LimitVal",
                                     valueObject.GetArrayElementAtIndex(i).objectReferenceValue, typeof(UnityEngine.Object), true);
@@ -102,8 +98,6 @@ namespace FoldergeistAssets
 
                             for (int i = 0; i < valueInt.arraySize; i++)
                             {
-                                _propertyHeight++;
-
                                 pos.y += EditorGUIUtility.singleLineHeight + 5;
                                 valueInt.GetArrayElementAtIndex(i).intValue = EditorGUI.IntField(pos, "LimitVal", valueInt.GetArrayElementAtIndex(i).intValue);
                             }
@@ -116,8 +110,6 @@ namespace FoldergeistAssets
 
                             for (int i = 0; i < valueFloat.arraySize; i++)
                             {
-                                _propertyHeight++;
-
                                 pos.y += EditorGUIUtility.singleLineHeight + 5;
                                 valueFloat.GetArrayElementAtIndex(i).floatValue = EditorGUI.FloatField(pos, "LimitVal", valueFloat.GetArrayElementAtIndex(i).floatValue);
                             }
@@ -130,8 +122,6 @@ namespace FoldergeistAssets
 
                             for (int i = 0; i < valueString.arraySize; i++)
                             {
-                                _propertyHeight++;
-
                                 pos.y += EditorGUIUtility.singleLineHeight + 5;
                                 valueString.GetArrayElementAtIndex(i).stringValue = EditorGUI.TextField(pos, "LimitVal", valueString.GetArrayElementAtIndex(i).stringValue);
                             }
@@ -187,7 +177,31 @@ namespace FoldergeistAssets
             {
                 if (property.isExpanded)
                 {
-                    return EditorGUIUtility.singleLineHeight * _propertyHeight + (EditorGUIUtility.singleLineHeight / 3.3333334f) * (_propertyHeight - 8);
+                    int propertyHeight = 8;
+                    var limit = (UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex;
+
+                    if(limit == UnityEventValueLimit.Array)
+                    {
+                        var listenerMode = (PersistentListenerMode)property.FindPropertyRelative("_listenerMode").enumValueIndex;
+
+                        switch (listenerMode)
+                        {
+                            case PersistentListenerMode.Object:
+                                propertyHeight += property.FindPropertyRelative("_valueObjects").arraySize;
+                                break;
+                            case PersistentListenerMode.Int:
+                                propertyHeight += property.FindPropertyRelative("_valueInts").arraySize;
+                                break;
+                            case PersistentListenerMode.Float:
+                                propertyHeight += property.FindPropertyRelative("_valueFloats").arraySize;
+                                break;
+                            case PersistentListenerMode.String:
+                                propertyHeight += property.FindPropertyRelative("_valueStrings").arraySize;
+                                break;
+                        }
+                    }
+
+                    return EditorGUIUtility.singleLineHeight * propertyHeight + (EditorGUIUtility.singleLineHeight / 3.3333334f) * (propertyHeight - 8);
                 }
                 else
                 {
@@ -197,8 +211,6 @@ namespace FoldergeistAssets
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
-                _propertyHeight = 8;
-
                 if (property.isExpanded)
                 {
                     position.height = EditorGUIUtility.singleLineHeight;
