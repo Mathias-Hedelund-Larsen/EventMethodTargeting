@@ -204,7 +204,6 @@ namespace FoldergeistAssets
 
                         EditorUtility.SetDirty(eventMethodTargetingAsset);
                         eventMethodTargeting.ApplyModifiedProperties();
-
                     }
 
                     DrawEventTargeting(position, property, label);
@@ -212,6 +211,32 @@ namespace FoldergeistAssets
                 else if (PrefabStageUtility.GetCurrentPrefabStage() != null)
                 {
                     var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabStageUtility.GetCurrentPrefabStage().prefabAssetPath);
+                    var component = prefab.GetComponent(targetObject.GetType());
+
+                    if (!component)
+                    {
+                        component = prefab.GetComponentInChildren(targetObject.GetType());
+                    }
+
+                    if (component)
+                    {
+                        bool isDataContained = CheckIfDataContained(methodTargetingDataArray, "None", component.GetInstanceID());
+
+                        if (!isDataContained)
+                        {
+                            methodTargetingDataArray.arraySize++;
+
+                            var eventMethodData = methodTargetingDataArray.GetArrayElementAtIndex(methodTargetingDataArray.arraySize - 1);
+
+                            eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = "None";
+                            eventMethodData.FindPropertyRelative("_objectID").intValue = targetObject.GetInstanceID();
+
+                            EditorUtility.SetDirty(eventMethodTargetingAsset);
+                            eventMethodTargeting.ApplyModifiedProperties();
+                        }
+
+                        DrawEventTargeting(position, property, label);
+                    }
                 }
                 else
                 {

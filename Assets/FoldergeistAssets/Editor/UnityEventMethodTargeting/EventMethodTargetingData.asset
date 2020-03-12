@@ -13,10 +13,24 @@ MonoBehaviour:
   m_Name: EventMethodTargetingData
   m_EditorClassIdentifier: 
   _methodTargetingData:
-  - _sceneGuid: None
-    _objectID: 11190
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 1272014524
     _targetMethods:
-    - _methodName: Awake
+    - _methodName: TakeFloat
+      _searchFor: 3
+      _listenerMode: 0
+      _limitationEnumType: 
+      _onType: ButtonCallMethod, Assembly-CSharp
+      _limit: 0
+      _valueObjects: []
+      _valueInts: 
+      _valueFloats: []
+      _valueStrings: []
+      _valueBools: 
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 146548271
+    _targetMethods:
+    - _methodName: OnClick
       _searchFor: 3
       _listenerMode: 1
       _limitationEnumType: 
@@ -43,37 +57,6 @@ MonoBehaviour:
       _valueBools: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 99311084
-    _targetMethods: []
-  - _sceneGuid: None
-    _objectID: 11176
-    _targetMethods:
-    - _methodName: TakeFloat
-      _searchFor: 3
-      _listenerMode: 0
-      _limitationEnumType: 
-      _onType: ButtonCallMethod, Assembly-CSharp
-      _limit: 0
-      _valueObjects: []
-      _valueInts: 
-      _valueFloats: []
-      _valueStrings: []
-      _valueBools: 
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 0
-    _targetMethods:
-    - _methodName: TakeFloat
-      _searchFor: 3
-      _listenerMode: 0
-      _limitationEnumType: 
-      _onType: ButtonCallMethod, Assembly-CSharp
-      _limit: 0
-      _valueObjects: []
-      _valueInts: 
-      _valueFloats: []
-      _valueStrings: []
-      _valueBools: 
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 1272014524
     _targetMethods:
     - _methodName: TakeFloat
       _searchFor: 3

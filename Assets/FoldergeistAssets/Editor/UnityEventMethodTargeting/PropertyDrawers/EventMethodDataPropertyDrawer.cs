@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -26,7 +25,14 @@ namespace FoldergeistAssets
                     Object obj = (Object)typeof(Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static)
                         .Invoke(null, new object[] { objectID });
 
-                    _heightModifier = 1;
+                    if (obj)
+                    {
+                        _heightModifier = 1;
+                    }
+                    else
+                    {
+                        _heightModifier = 2;
+                    }
                 }
                 else
                 {
@@ -74,7 +80,16 @@ namespace FoldergeistAssets
                     }
                     else
                     {
-                        _heightModifier = 1;
+                        var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
+
+                        if (sceneAsset)
+                        {
+                            _heightModifier = 1;
+                        }
+                        else
+                        {
+                            _heightModifier = 2;
+                        }
                     }
                 }
 
@@ -94,7 +109,32 @@ namespace FoldergeistAssets
                     Object obj = (Object)typeof(Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static)
                         .Invoke(null, new object[] { objectID });
 
-                    EditorGUI.ObjectField(position, new GUIContent("Reference"), obj, typeof(Object), true);
+                    if (obj)
+                    {
+                        EditorGUI.ObjectField(position, new GUIContent("Reference"), obj, typeof(Object), true);
+                    }
+                    else
+                    {
+                        EditorGUI.TextField(position, "Couldnt find object in assets");
+
+                        position.y += EditorGUIUtility.singleLineHeight + 5;
+
+                        position.x += 15;
+                        position.width -= 15;
+                        GUI.enabled = true;
+
+                        if (GUI.Button(position, "Delete"))
+                        {
+                            EditorApplication.delayCall += () =>
+                            {
+                                GetSubStringBetweenChars(property.propertyPath, '[', ']', out string full, out string index);
+
+                                property.serializedObject.FindProperty(property.propertyPath.Split('.')[0]).DeleteArrayElementAtIndex(int.Parse(index));
+
+                                property.serializedObject.ApplyModifiedProperties();
+                            };
+                        }
+                    }
                 }
                 else
                 {
@@ -159,7 +199,33 @@ namespace FoldergeistAssets
                     }
                     else
                     {
-                        EditorGUI.ObjectField(position, new GUIContent("SceneReference"), AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath), typeof(SceneAsset), false);
+                        var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
+
+                        if (sceneAsset) 
+                        {
+                            EditorGUI.ObjectField(position, new GUIContent("SceneReference"), sceneAsset, typeof(SceneAsset), false); 
+                        }
+                        else
+                        {
+                            EditorGUI.TextField(position, "Couldnt find scene in assets");
+                            position.y += EditorGUIUtility.singleLineHeight + 5;
+                            GUI.enabled = true;
+
+                            position.x += 15;
+                            position.width -= 15;
+
+                            if (GUI.Button(position, "Delete"))
+                            {
+                                EditorApplication.delayCall += () =>
+                                {
+                                    GetSubStringBetweenChars(property.propertyPath, '[', ']', out string full, out string index);
+
+                                    property.serializedObject.FindProperty(property.propertyPath.Split('.')[0]).DeleteArrayElementAtIndex(int.Parse(index));
+
+                                    property.serializedObject.ApplyModifiedProperties();
+                                };
+                            }
+                        }
                     }
                 }
 
