@@ -55,12 +55,12 @@ MonoBehaviour:
       _valueFloats: []
       _valueStrings: []
       _valueBools: 
-  - _sceneGuid: 09b17604a8a27df4f9d9aedccced8a0d
-    _objectID: 1849299122
+  - _sceneGuid: 23a8aedd67ba14d4dbcea0dfad05f8f9
+    _objectID: 1570364064
     _targetMethods:
-    - _methodName: Init
+    - _methodName: set_FullScreen
       _searchFor: 0
-      _listenerMode: 1
+      _listenerMode: 0
       _limitationEnumType: 
       _onType: FoldergeistAssets.SettingsManagement.Settings, FoldergeistAsset-Settings
       _limit: 0
