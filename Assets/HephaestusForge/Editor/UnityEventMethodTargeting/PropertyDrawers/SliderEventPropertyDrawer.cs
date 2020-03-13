@@ -1,14 +1,15 @@
-﻿using System.Reflection;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using UnityEngine.UI;
 
-namespace FoldergeistAssets
+namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {
-        [CustomPropertyDrawer(typeof(Dropdown.DropdownEvent), true)]
-        public class DropdownEventPropertyDrawer : PropertyDrawer
+        [CustomPropertyDrawer(typeof(Slider.SliderEvent), true)]
+
+        public class SliderEventPropertyDrawer : PropertyDrawer
         {
             private EventMethodTargetAttributePropertyDrawer _eventMethodDrawer = new EventMethodTargetAttributePropertyDrawer();
 
@@ -19,7 +20,7 @@ namespace FoldergeistAssets
                     var fieldInfoProperty = typeof(PropertyDrawer).GetField("m_FieldInfo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                     var fieldInfoAttribute = typeof(PropertyDrawer).GetField("m_Attribute", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                    fieldInfoProperty.SetValue(_eventMethodDrawer, typeof(Dropdown).GetField("m_OnValueChanged", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                    fieldInfoProperty.SetValue(_eventMethodDrawer, typeof(Slider).GetField("m_OnValueChanged", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                     fieldInfoAttribute.SetValue(_eventMethodDrawer, new EventMethodTargetAttribute());
                 }
 
@@ -33,7 +34,7 @@ namespace FoldergeistAssets
                     var fieldInfoProperty = typeof(PropertyDrawer).GetField("m_FieldInfo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                     var fieldInfoAttribute = typeof(PropertyDrawer).GetField("m_Attribute", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                    fieldInfoProperty.SetValue(_eventMethodDrawer, typeof(Dropdown).GetField("m_OnValueChanged", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                    fieldInfoProperty.SetValue(_eventMethodDrawer, typeof(Button).GetField("m_OnClick", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                     fieldInfoAttribute.SetValue(_eventMethodDrawer, new EventMethodTargetAttribute());
                 }
 

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-namespace FoldergeistAssets
+namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {

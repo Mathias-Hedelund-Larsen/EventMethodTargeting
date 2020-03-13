@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace FoldergeistAssets
+namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {
@@ -12,7 +10,7 @@ namespace FoldergeistAssets
             private EventMethodData[] _methodTargetingData;
 
 #if UNITY_EDITOR
-            [UnityEditor.MenuItem("Assets/Create/FoldergeistAssets/Limited to one/EventMethodTargetingData", false, 0)]
+            [UnityEditor.MenuItem("Assets/Create/HephaestusForge/Limited to one/EventMethodTargetingData", false, 0)]
             private static void CreateInstance()
             {
                 if (UnityEditor.AssetDatabase.FindAssets("t:Settings").Length == 0)

@@ -7,7 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace FoldergeistAssets
+namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {

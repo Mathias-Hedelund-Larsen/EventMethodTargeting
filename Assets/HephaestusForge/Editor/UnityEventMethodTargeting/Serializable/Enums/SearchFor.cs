@@ -1,4 +1,4 @@
-﻿namespace FoldergeistAssets
+﻿namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {

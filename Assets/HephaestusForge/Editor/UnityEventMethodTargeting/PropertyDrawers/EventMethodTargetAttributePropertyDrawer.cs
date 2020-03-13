@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using static UnityEditor.SceneManagement.EditorSceneManager;
 
-namespace FoldergeistAssets
+namespace HephaestusForge
 {
     namespace UnityEventMethodTargeting
     {
@@ -397,7 +397,9 @@ namespace FoldergeistAssets
                     }
                     else
                     {
-                        EditorGUI.TextField(position, $"Couldnt find component of type {fieldInfo.FieldType.Name} on the preafab asset");
+                        GUI.enabled = false;
+                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the asset.");
+                        GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
@@ -434,7 +436,9 @@ namespace FoldergeistAssets
                     }
                     else
                     {
-                        EditorGUI.TextField(position, $"Couldnt find component of type {fieldInfo.FieldType.Name} on the preafab asset");
+                        GUI.enabled = false;
+                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the GameObject.");
+                        GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
@@ -460,7 +464,9 @@ namespace FoldergeistAssets
                     }
                     else
                     {
-                        EditorGUI.TextField(position, $"Couldnt find component of type {fieldInfo.FieldType.Name} on the preafab asset");
+                        GUI.enabled = false;
+                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the GameObject.");
+                        GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
