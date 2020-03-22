@@ -22,8 +22,8 @@ namespace HephaestusForge
         {
             private float _extraHeight;
             private SerializedObject _target;
-            private SerializedObject _eventMethodTargeting;
-            private EventMethodTargetingData _eventMethodTargetingAsset;
+            private static SerializedObject _eventMethodTargeting;
+            private static EventMethodTargetingData _eventMethodTargetingAsset;
             private UnityEventDrawer _eventDrawer = new UnityEventDrawer();
             private TargetMethodDataPropertyDrawer _targetMethodDataPropertyDrawer = new TargetMethodDataPropertyDrawer();
             private FieldInfo _guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -139,6 +139,14 @@ namespace HephaestusForge
             }
                 };
 
+            public EventMethodTargetAttributePropertyDrawer()
+            {
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.Log("Property drawer constructor");
+#endif
+
+            }
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
                 if (fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) ||
@@ -398,15 +406,13 @@ namespace HephaestusForge
                     else
                     {
                         GUI.enabled = false;
-                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the asset.");
+                        EditorGUI.TextField(position, "Initializing: Please re-inspect the asset.");
                         GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
                     {
                         EditorUtility.SetDirty(_eventMethodTargetingAsset);
-                        _eventMethodTargeting.ApplyModifiedProperties();
-                        AssetDatabase.SaveAssets();
                     }
                 }
                 else if(PrefabStageUtility.GetCurrentPrefabStage() != null)
@@ -437,15 +443,13 @@ namespace HephaestusForge
                     else
                     {
                         GUI.enabled = false;
-                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the GameObject.");
+                        EditorGUI.TextField(position, "Initializing: Please re-inspect the GameObject.");
                         GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
                     {
                         EditorUtility.SetDirty(_eventMethodTargetingAsset);
-                        _eventMethodTargeting.ApplyModifiedProperties();
-                        AssetDatabase.SaveAssets();
                     }
                 }
                 else
@@ -465,15 +469,13 @@ namespace HephaestusForge
                     else
                     {
                         GUI.enabled = false;
-                        EditorGUI.TextField(position, "Initializaing: Please re-inspect the GameObject.");
+                        EditorGUI.TextField(position, "Initializing: Please re-inspect the GameObject.");
                         GUI.enabled = true;
                     }
 
                     if (EditorGUI.EndChangeCheck())
                     {
                         EditorUtility.SetDirty(_eventMethodTargetingAsset);
-                        _eventMethodTargeting.ApplyModifiedProperties();
-                        AssetDatabase.SaveAssets();
                     }
                 }
             }
@@ -661,6 +663,16 @@ namespace HephaestusForge
                     _target.ApplyModifiedProperties();
                     AssetDatabase.SaveAssets();
                 }
+            }
+
+            ~EventMethodTargetAttributePropertyDrawer()
+            {
+                Debug.Log("Closing property drawer and saving assets");
+
+                _eventMethodTargeting.ApplyModifiedProperties();
+                AssetDatabase.SaveAssets();
+                _eventMethodTargeting = null;
+                _eventMethodTargetingAsset = null;
             }
         }
     }

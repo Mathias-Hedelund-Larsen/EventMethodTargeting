@@ -1,7 +1,12 @@
-﻿using UnityEngine;
+﻿using HephaestusForge.UnityEventMethodTargeting;
+using UnityEngine;
+using UnityEngine.Events;
 
 public class Demo : MonoBehaviour
 {
+    [SerializeField, EventMethodTarget]
+    private UnityEvent _event;
+
     private void TakeInt(int val)
     {
         Debug.Log(val);
