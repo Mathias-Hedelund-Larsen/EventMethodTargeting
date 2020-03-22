@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78e7f8fdaa70c424fa649ee0ce87f53c, type: 3}
   m_Name: AutoGitTimerAndHistory
   m_EditorClassIdentifier: 
-  _countdownTimer: 0
-  _targetTime: 0
-  _warningTimer: 0
-  _warningTargetTime: 0
-  _secondsToDelay: 30
-  _history: []
+  _countdownTimer: 291.3069482000001
+  _targetTime: 960.4613266
+  _warningTimer: -44.77021690000004
+  _warningTargetTime: 624.3841616999999
+  _secondsToDelay: 300
+  _history:
+  - 22-03-2020 21:21:07
