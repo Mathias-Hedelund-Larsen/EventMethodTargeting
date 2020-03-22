@@ -154,7 +154,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             _propertyPath = property.propertyPath;
-            _target = property.serializedObject.targetObject;
+            _target = property.serializedObject;
 
             if (!_initialized.Contains(_propertyPath))
             {
@@ -173,8 +173,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 if (methodTargetingDataArray.isExpanded)
                 {
-                    if (property.serializedObject.targetObject is ScriptableObject ||
-                        AssetDatabase.Contains((property.serializedObject.targetObject as MonoBehaviour).transform.root.gameObject))
+                    if (property.serializedObject.targetObject.IsAsset())
                     {
                         var effectHeight = FindDataArrayElementForAsset(methodTargetingDataArray, property.serializedObject.targetObject);
 
@@ -239,7 +238,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
             else
             {
-                return EditorGUIUtility.singleLineHeight + 5;
+                return EditorGUIUtility.singleLineHeight;
             }
         }
 
