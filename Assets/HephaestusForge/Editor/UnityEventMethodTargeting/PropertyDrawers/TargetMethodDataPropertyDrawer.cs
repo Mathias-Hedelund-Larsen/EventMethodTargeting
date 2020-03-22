@@ -8,17 +8,14 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace HephaestusForge
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    [CustomPropertyDrawer(typeof(TargetMethodData))]
+    public class TargetMethodDataPropertyDrawer : PropertyDrawer
     {
-        [CustomPropertyDrawer(typeof(TargetMethodData))]
-
-        public class TargetMethodDataPropertyDrawer : PropertyDrawer
-        {
-            private readonly Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>> _drawLimitedField =
-                new Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>>()
-                {
+        private readonly Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>> _drawLimitedField =
+            new Dictionary<UnityEventValueLimit, Action<Rect, SerializedProperty, PersistentListenerMode>>()
+            {
                     {
                         UnityEventValueLimit.None, (pos, property, listenerMode) =>
                         {
@@ -168,458 +165,457 @@ namespace HephaestusForge
                     limitationEnumType.stringValue = typeNames[index];
                 }
             }
-                };
+            };
 
-            private List<string> typeNames = new List<string>();
-            private List<string> displayTypeNames = new List<string>();
+        private List<string> typeNames = new List<string>();
+        private List<string> displayTypeNames = new List<string>();
 
-            public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            if (property.isExpanded)
             {
-                if (property.isExpanded)
+                int propertyHeight = 6;
+                var limit = (UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex;
+
+                if (limit == UnityEventValueLimit.Array)
                 {
-                    int propertyHeight = 6;
-                    var limit = (UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex;
+                    var listenerMode = (PersistentListenerMode)property.FindPropertyRelative("_listenerMode").enumValueIndex;
 
-                    if(limit == UnityEventValueLimit.Array)
+                    switch (listenerMode)
                     {
-                        var listenerMode = (PersistentListenerMode)property.FindPropertyRelative("_listenerMode").enumValueIndex;
+                        case PersistentListenerMode.Object:
+                            propertyHeight += property.FindPropertyRelative("_valueObjects").arraySize;
+                            break;
+                        case PersistentListenerMode.Int:
+                            propertyHeight += property.FindPropertyRelative("_valueInts").arraySize;
+                            break;
+                        case PersistentListenerMode.Float:
+                            propertyHeight += property.FindPropertyRelative("_valueFloats").arraySize;
+                            break;
+                        case PersistentListenerMode.String:
+                            propertyHeight += property.FindPropertyRelative("_valueStrings").arraySize;
+                            break;
+                    }
+                }
 
-                        switch (listenerMode)
+                return (EditorGUIUtility.singleLineHeight + 5) * propertyHeight;
+            }
+            else
+            {
+                return EditorGUIUtility.singleLineHeight;
+            }
+        }
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (property.isExpanded)
+            {
+                position.height = EditorGUIUtility.singleLineHeight;
+
+                EditorGUI.PropertyField(position, property);
+
+                position.y += EditorGUIUtility.singleLineHeight + 5;
+
+                var searchFor = property.FindPropertyRelative("_searchFor");
+
+                Type targetSubclassParent = typeof(Component);
+
+                List<string> availableSearchForValues = new List<string>();
+
+                foreach (SearchFor item in Enum.GetValues(typeof(SearchFor)))
+                {
+                    if (item == SearchFor.ComponentInScene)
+                    {
+                        if (property.serializedObject.targetObject is Component)
                         {
+                            var editingGO = (property.serializedObject.targetObject as Component).transform.parent.gameObject;
+
+                            var sceneAssetGuids = AssetDatabase.FindAssets($"t:SceneAsset");
+                            List<SceneAsset> sceneAssets = new List<SceneAsset>();
+
+                            for (int i = 0; i < sceneAssetGuids.Length; i++)
+                            {
+                                sceneAssets.Add(AssetDatabase.LoadAssetAtPath<SceneAsset>(AssetDatabase.GUIDToAssetPath(sceneAssetGuids[i])));
+                            }
+
+                            if (editingGO.scene != null && editingGO.scene.name != null && editingGO.gameObject.scene.name != string.Empty &&
+                                sceneAssets.Any(s => s.name == editingGO.gameObject.scene.name))
+                            {
+                                availableSearchForValues.Add(item.ToString());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        availableSearchForValues.Add(item.ToString());
+                    }
+                }
+                int oldEnumValueIndex = searchFor.enumValueIndex;
+
+                searchFor.enumValueIndex = EditorGUI.Popup(position, "SearchFor", searchFor.enumValueIndex, availableSearchForValues.ToArray());
+                position.y += EditorGUIUtility.singleLineHeight + 5;
+                bool markedForChange = false;
+
+                if ((SearchFor)searchFor.enumValueIndex == SearchFor.Asset)
+                {
+                    targetSubclassParent = typeof(ScriptableObject);
+                }
+
+                if (oldEnumValueIndex == 0 && searchFor.enumValueIndex > 0 || searchFor.enumValueIndex == 0 && oldEnumValueIndex > 0)
+                {
+                    markedForChange = true;
+                }
+
+                if (displayTypeNames.Count == 0 && typeNames.Count == 0 || markedForChange)
+                {
+                    displayTypeNames.Clear();
+                    typeNames.Clear();
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).ToList();
+
+                    for (int i = 0; i < assemblies.Count; i++)
+                    {
+                        var assemblyClasses = assemblies[i].GetTypes();
+
+                        for (int t = 0; t < assemblyClasses.Length; t++)
+                        {
+                            if (!assemblyClasses[t].IsGenericType && !assemblyClasses[t].IsAbstract && assemblyClasses[t].IsSubclassOf(targetSubclassParent))
+                            {
+                                string[] display = assemblyClasses[t].ToString().Split('.');
+
+                                displayTypeNames.Add(display[display.Length - 1]);
+                                typeNames.Add($"{assemblyClasses[t].FullName}, {assemblies[i].FullName.Split(',')[0]}");
+                            }
+                        }
+                    }
+                }
+
+                var listenerMode = property.FindPropertyRelative("_listenerMode");
+
+                EditorGUI.PropertyField(position, listenerMode, new GUIContent("ListenerMode"));
+
+                if ((PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.Void)
+                {
+                    property.FindPropertyRelative("_limit").enumValueIndex = (int)UnityEventValueLimit.None;
+                }
+                else if ((PersistentListenerMode)listenerMode.enumValueIndex != PersistentListenerMode.Int &&
+                    (PersistentListenerMode)listenerMode.enumValueIndex != PersistentListenerMode.String)
+                {
+                    if ((UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex == UnityEventValueLimit.Enum)
+                    {
+                        property.FindPropertyRelative("_limit").enumValueIndex = 0;
+                    }
+                }
+
+                position.y += EditorGUIUtility.singleLineHeight + 5;
+
+                var onTypeProperty = property.FindPropertyRelative("_onType");
+                int index = typeNames.Contains(onTypeProperty.stringValue) ? typeNames.IndexOf(onTypeProperty.stringValue) : 0;
+
+                index = EditorGUI.Popup(position, "OnType", index, displayTypeNames.ToArray());
+
+                if (typeNames.Count > index)
+                {
+                    onTypeProperty.stringValue = typeNames[index];
+
+                    position.y += EditorGUIUtility.singleLineHeight + 5;
+
+                    var type = Type.GetType(onTypeProperty.stringValue);
+
+                    var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    List<string> availableMethods = new List<string>();
+
+                    for (int i = 0; i < methods.Length; i++)
+                    {
+                        string accessibility = methods[i].IsPublic ? "Public" : "NonPublic";
+
+                        switch ((PersistentListenerMode)listenerMode.enumValueIndex)
+                        {
+                            case PersistentListenerMode.Void:
+
+                                if (methods[i].GetParameters().Count() == 0 && methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
+                                break;
                             case PersistentListenerMode.Object:
-                                propertyHeight += property.FindPropertyRelative("_valueObjects").arraySize;
+
+                                if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType.IsSubclassOf(typeof(UnityEngine.Object)) ||
+                                    p.ParameterType == typeof(UnityEngine.Object)) && methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
                                 break;
                             case PersistentListenerMode.Int:
-                                propertyHeight += property.FindPropertyRelative("_valueInts").arraySize;
+
+                                if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(int)) &&
+                                    methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
                                 break;
                             case PersistentListenerMode.Float:
-                                propertyHeight += property.FindPropertyRelative("_valueFloats").arraySize;
+
+                                if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(float)) &&
+                                    methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
                                 break;
                             case PersistentListenerMode.String:
-                                propertyHeight += property.FindPropertyRelative("_valueStrings").arraySize;
+
+                                if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(string)) &&
+                                    methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
+                                break;
+                            case PersistentListenerMode.Bool:
+
+                                if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(bool)) && methods[i].ReturnType == typeof(void))
+                                {
+                                    availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                }
+
+                                break;
+                            case PersistentListenerMode.EventDefined:
+
+                                var parentPath = property.propertyPath.Split('.')[0];
+                                string indexWithEncaptionlation;
+                                string indexPure;
+
+                                GetSubStringBetweenChars(property.propertyPath, '[', ']', out indexWithEncaptionlation, out indexPure);
+
+                                var methodTargetingDataProperty = property.serializedObject.FindProperty(parentPath);
+
+                                var eventMethodDataProperty = methodTargetingDataProperty.GetArrayElementAtIndex(int.Parse(indexPure));
+                                var sceneGuidProperty = eventMethodDataProperty.FindPropertyRelative("_sceneGuid");
+                                var objectIDProperty = eventMethodDataProperty.FindPropertyRelative("_objectID");
+
+                                List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
+
+                                if (sceneGuidProperty.stringValue != "None")
+                                {
+                                    FindTargets(sceneGuidProperty, objectIDProperty, objects);
+                                }
+                                else
+                                {
+                                    var obj = (UnityEngine.Object)typeof(UnityEngine.Object).
+                                        GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static).
+                                        Invoke(null, new object[] { objectIDProperty.intValue });
+
+                                    objects.Add(obj);
+                                }
+
+                                for (int t = 0; t < objects.Count; t++)
+                                {
+                                    var fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>))).ToArray();
+
+                                    for (int y = 0; y < fields.Length; y++)
+                                    {
+                                        if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().
+                                            Any(p => p.ParameterType == fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<>)).GetGenericArguments()[0]) &&
+                                            methods[i].ReturnType == typeof(void))
+                                        {
+                                            availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                        }
+                                    }
+
+                                    fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                        f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>))).ToArray();
+
+                                    for (int y = 0; y < fields.Length; y++)
+                                    {
+                                        var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
+                                        var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,>)).GetGenericArguments();
+
+                                        if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) &&
+                                            methods[i].ReturnType == typeof(void))
+                                        {
+                                            availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                        }
+                                    }
+
+                                    fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                       f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>))).ToArray();
+
+                                    for (int y = 0; y < fields.Length; y++)
+                                    {
+                                        var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
+                                        var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,>)).GetGenericArguments();
+
+                                        if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) &&
+                                            methods[i].ReturnType == typeof(void))
+                                        {
+                                            availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                        }
+                                    }
+
+                                    fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
+                                       f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>))).ToArray();
+
+                                    for (int y = 0; y < fields.Length; y++)
+                                    {
+                                        var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
+                                        var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,,>)).GetGenericArguments();
+
+                                        if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) &&
+                                            methods[i].ReturnType == typeof(void))
+                                        {
+                                            availableMethods.Add($"{accessibility}.{methods[i].Name}");
+                                        }
+                                    }
+                                }
+
                                 break;
                         }
                     }
 
-                    return (EditorGUIUtility.singleLineHeight + 5) * propertyHeight;
+                    var methodName = property.FindPropertyRelative("_methodName");
+
+                    int methodNameIndex = availableMethods.Any(m => m.Split('.')[1] == methodName.stringValue) ?
+                        availableMethods.IndexOf(availableMethods.Find(m => m.Split('.')[1] == methodName.stringValue)) : 0;
+
+                    if (availableMethods.Count > 0)
+                    {
+                        methodNameIndex = EditorGUI.Popup(position, "MethodName", methodNameIndex, availableMethods.ToArray());
+                        methodName.stringValue = availableMethods[methodNameIndex].Split('.')[1];
+                    }
+                    else
+                    {
+                        GUI.enabled = false;
+                        EditorGUI.TextField(position, "No valid method");
+                        GUI.enabled = true;
+                    }
                 }
-                else
+
+                position.y += EditorGUIUtility.singleLineHeight + 5;
+
+                var limit = property.FindPropertyRelative("_limit");
+
+                List<string> availableLimitValues = new List<string>();
+
+                foreach (UnityEventValueLimit item in Enum.GetValues(typeof(UnityEventValueLimit)))
                 {
-                    return EditorGUIUtility.singleLineHeight;
-                }
-            }
-
-            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-            {
-                if (property.isExpanded)
-                {
-                    position.height = EditorGUIUtility.singleLineHeight;
-
-                    EditorGUI.PropertyField(position, property);
-
-                    position.y += EditorGUIUtility.singleLineHeight + 5;                    
-
-                    var searchFor = property.FindPropertyRelative("_searchFor");
-
-                    Type targetSubclassParent = typeof(Component);                   
-                    
-                    List<string> availableSearchForValues = new List<string>();
-
-                    foreach (SearchFor item in Enum.GetValues(typeof(SearchFor)))
-                    {
-                        if (item == SearchFor.ComponentInScene)
-                        {
-                            if (property.serializedObject.targetObject is Component)
-                            {
-                                var editingGO = (property.serializedObject.targetObject as Component).transform.parent.gameObject;
-
-                                var sceneAssetGuids = AssetDatabase.FindAssets($"t:SceneAsset");
-                                List<SceneAsset> sceneAssets = new List<SceneAsset>();
-
-                                for (int i = 0; i < sceneAssetGuids.Length; i++)
-                                {
-                                    sceneAssets.Add(AssetDatabase.LoadAssetAtPath<SceneAsset>(AssetDatabase.GUIDToAssetPath(sceneAssetGuids[i])));
-                                }
-
-                                if (editingGO.scene != null && editingGO.scene.name != null && editingGO.gameObject.scene.name != string.Empty &&
-                                    sceneAssets.Any(s => s.name == editingGO.gameObject.scene.name))
-                                {
-                                    availableSearchForValues.Add(item.ToString());
-                                }
-                            }
-                        }
-                        else
-                        {
-                            availableSearchForValues.Add(item.ToString());
-                        }
-                    }
-                    int oldEnumValueIndex = searchFor.enumValueIndex;
-
-                    searchFor.enumValueIndex = EditorGUI.Popup(position, "SearchFor", searchFor.enumValueIndex, availableSearchForValues.ToArray());
-                    position.y += EditorGUIUtility.singleLineHeight + 5;
-                    bool markedForChange = false;
-
-                    if ((SearchFor)searchFor.enumValueIndex == SearchFor.Asset)
-                    {
-                        targetSubclassParent = typeof(ScriptableObject);
-                    }
-
-                    if(oldEnumValueIndex == 0 && searchFor.enumValueIndex > 0 || searchFor.enumValueIndex == 0 && oldEnumValueIndex > 0)
-                    {
-                        markedForChange = true;
-                    }
-
-                    if (displayTypeNames.Count == 0 && typeNames.Count == 0 || markedForChange)
-                    {
-                        displayTypeNames.Clear();
-                        typeNames.Clear();
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Editor") && !a.FullName.Contains("firstpass")).ToList();
-
-                        for (int i = 0; i < assemblies.Count; i++)
-                        {
-                            var assemblyClasses = assemblies[i].GetTypes();
-
-                            for (int t = 0; t < assemblyClasses.Length; t++)
-                            {
-                                if (!assemblyClasses[t].IsGenericType && !assemblyClasses[t].IsAbstract && assemblyClasses[t].IsSubclassOf(targetSubclassParent))
-                                {
-                                    string[] display = assemblyClasses[t].ToString().Split('.');
-
-                                    displayTypeNames.Add(display[display.Length - 1]);
-                                    typeNames.Add($"{assemblyClasses[t].FullName}, {assemblies[i].FullName.Split(',')[0]}");
-                                }
-                            }
-                        }
-                    }                                   
-
-                    var listenerMode = property.FindPropertyRelative("_listenerMode");
-
-                    EditorGUI.PropertyField(position, listenerMode, new GUIContent("ListenerMode"));
-
                     if ((PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.Void)
                     {
-                        property.FindPropertyRelative("_limit").enumValueIndex = (int)UnityEventValueLimit.None;
-                    }
-                    else if ((PersistentListenerMode)listenerMode.enumValueIndex != PersistentListenerMode.Int &&
-                        (PersistentListenerMode)listenerMode.enumValueIndex != PersistentListenerMode.String)
-                    {
-                        if ((UnityEventValueLimit)property.FindPropertyRelative("_limit").enumValueIndex == UnityEventValueLimit.Enum)
+                        if (item == UnityEventValueLimit.None)
                         {
-                            property.FindPropertyRelative("_limit").enumValueIndex = 0;
+                            availableLimitValues.Add(item.ToString());
+                            break;
                         }
                     }
-
-                    position.y += EditorGUIUtility.singleLineHeight + 5;
-
-                    var onTypeProperty = property.FindPropertyRelative("_onType");
-                    int index = typeNames.Contains(onTypeProperty.stringValue) ? typeNames.IndexOf(onTypeProperty.stringValue) : 0;
-
-                    index = EditorGUI.Popup(position, "OnType", index, displayTypeNames.ToArray());
-
-                    if (typeNames.Count > index)
+                    else if (item == UnityEventValueLimit.Enum)
                     {
-                        onTypeProperty.stringValue = typeNames[index];
-
-                        position.y += EditorGUIUtility.singleLineHeight + 5;
-
-                        var type = Type.GetType(onTypeProperty.stringValue);
-
-                        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                        List<string> availableMethods = new List<string>();
-
-                        for (int i = 0; i < methods.Length; i++)
-                        {
-                            string accessibility = methods[i].IsPublic ? "Public" : "NonPublic";
-
-                            switch ((PersistentListenerMode)listenerMode.enumValueIndex)
-                            {
-                                case PersistentListenerMode.Void:
-
-                                    if (methods[i].GetParameters().Count() == 0 && methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.Object:
-
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType.IsSubclassOf(typeof(UnityEngine.Object)) ||
-                                        p.ParameterType == typeof(UnityEngine.Object)) && methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.Int:
-
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(int)) && 
-                                        methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.Float:
-
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(float)) && 
-                                        methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.String:
-
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(string)) && 
-                                        methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.Bool:
-
-                                    if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().Any(p => p.ParameterType == typeof(bool)) && methods[i].ReturnType == typeof(void))
-                                    {
-                                        availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                    }
-
-                                    break;
-                                case PersistentListenerMode.EventDefined:
-
-                                    var parentPath = property.propertyPath.Split('.')[0];
-                                    string indexWithEncaptionlation;
-                                    string indexPure;
-                                    
-                                    GetSubStringBetweenChars(property.propertyPath, '[', ']', out indexWithEncaptionlation, out indexPure);
-
-                                    var methodTargetingDataProperty = property.serializedObject.FindProperty(parentPath);
-
-                                    var eventMethodDataProperty = methodTargetingDataProperty.GetArrayElementAtIndex(int.Parse(indexPure));
-                                    var sceneGuidProperty = eventMethodDataProperty.FindPropertyRelative("_sceneGuid");
-                                    var objectIDProperty = eventMethodDataProperty.FindPropertyRelative("_objectID");
-
-                                    List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
-
-                                    if (sceneGuidProperty.stringValue != "None")
-                                    {
-                                        FindTargets(sceneGuidProperty, objectIDProperty, objects);
-                                    }
-                                    else
-                                    {
-                                        var obj = (UnityEngine.Object)typeof(UnityEngine.Object).
-                                            GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static).
-                                            Invoke(null, new object[] { objectIDProperty.intValue });
-
-                                            objects.Add(obj);
-                                    }
-
-                                    for (int t = 0; t < objects.Count; t++)
-                                    {
-                                        var fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
-                                            f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>))).ToArray();
-
-                                        for (int y = 0; y < fields.Length; y++)
-                                        {
-                                            if (methods[i].GetParameters().Count() == 1 && methods[i].GetParameters().
-                                                Any(p => p.ParameterType == fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<>)).GetGenericArguments()[0]) && 
-                                                methods[i].ReturnType == typeof(void))
-                                            {
-                                                availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                            }
-                                        }
-
-                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
-                                            f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>))).ToArray();
-
-                                        for (int y = 0; y < fields.Length; y++)
-                                        {
-                                            var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
-                                            var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,>)).GetGenericArguments();
-
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
-                                                methods[i].ReturnType == typeof(void))
-                                            {
-                                                availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                            }
-                                        }
-
-                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
-                                           f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>))).ToArray();
-
-                                        for (int y = 0; y < fields.Length; y++)
-                                        {
-                                            var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
-                                            var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,>)).GetGenericArguments();
-
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
-                                                methods[i].ReturnType == typeof(void))
-                                            {
-                                                availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                            }
-                                        }
-
-                                        fields = objects[t].GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f =>
-                                           f.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>))).ToArray();
-
-                                        for (int y = 0; y < fields.Length; y++)
-                                        {
-                                            var methodParameterTypes = methods[i].GetParameters().Select(p => p.ParameterType).ToArray();
-                                            var eventParameterTypes = fields[y].FieldType.ParentTrueGeneric(typeof(UnityEvent<,,,>)).GetGenericArguments();
-
-                                            if (methodParameterTypes.Length == eventParameterTypes.Length && methodParameterTypes.SequenceEqual(eventParameterTypes) && 
-                                                methods[i].ReturnType == typeof(void))
-                                            {
-                                                availableMethods.Add($"{accessibility}.{methods[i].Name}");
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                            }
-                        }
-
-                        var methodName = property.FindPropertyRelative("_methodName");
-
-                        int methodNameIndex = availableMethods.Any(m => m.Split('.')[1] == methodName.stringValue) ?
-                            availableMethods.IndexOf(availableMethods.Find(m => m.Split('.')[1] == methodName.stringValue)) : 0;
-
-                        if (availableMethods.Count > 0)
-                        {
-                            methodNameIndex = EditorGUI.Popup(position, "MethodName", methodNameIndex, availableMethods.ToArray());
-                            methodName.stringValue = availableMethods[methodNameIndex].Split('.')[1];
-                        }
-                        else
-                        {
-                            GUI.enabled = false;
-                            EditorGUI.TextField(position, "No valid method");
-                            GUI.enabled = true;
-                        }
-                    }
-
-                    position.y += EditorGUIUtility.singleLineHeight + 5;
-
-                    var limit = property.FindPropertyRelative("_limit");
-
-                    List<string> availableLimitValues = new List<string>();
-
-                    foreach (UnityEventValueLimit item in Enum.GetValues(typeof(UnityEventValueLimit)))
-                    {
-                        if ((PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.Void)
-                        {
-                            if (item == UnityEventValueLimit.None)
-                            {
-                                availableLimitValues.Add(item.ToString());
-                                break;
-                            }
-                        }
-                        else if (item == UnityEventValueLimit.Enum)
-                        {
-                            if ((PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.Int ||
-                                (PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.String)
-                            {
-                                availableLimitValues.Add(item.ToString());
-                            }
-                        }
-                        else
+                        if ((PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.Int ||
+                            (PersistentListenerMode)listenerMode.enumValueIndex == PersistentListenerMode.String)
                         {
                             availableLimitValues.Add(item.ToString());
                         }
                     }
-
-                    position.x += 15;
-
-                    var fullWidth = position.width;
-
-                    position.width = 10;
-
-                    if (EditorGUI.DropdownButton(position, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
+                    else
                     {
-                        GenericMenu menu = new GenericMenu();
+                        availableLimitValues.Add(item.ToString());
+                    }
+                }
 
-                        for (int i = 0; i < availableLimitValues.Count; i++)
-                        {
-                            var enumValue = (UnityEventValueLimit)Enum.Parse(typeof(UnityEventValueLimit), availableLimitValues[i]);
+                position.x += 15;
 
-                            menu.AddItem(new GUIContent(availableLimitValues[i]), limit.enumValueIndex == (int)enumValue, () => SetProperty(limit, enumValue));
-                        }
+                var fullWidth = position.width;
 
-                        menu.ShowAsContext();
+                position.width = 10;
+
+                if (EditorGUI.DropdownButton(position, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
+                {
+                    GenericMenu menu = new GenericMenu();
+
+                    for (int i = 0; i < availableLimitValues.Count; i++)
+                    {
+                        var enumValue = (UnityEventValueLimit)Enum.Parse(typeof(UnityEventValueLimit), availableLimitValues[i]);
+
+                        menu.AddItem(new GUIContent(availableLimitValues[i]), limit.enumValueIndex == (int)enumValue, () => SetProperty(limit, enumValue));
                     }
 
-                    position.x += 3;
-
-                    position.width = fullWidth - 20;
-
-                    _drawLimitedField[(UnityEventValueLimit)limit.enumValueIndex].Invoke(position, property, (PersistentListenerMode)listenerMode.enumValueIndex);
+                    menu.ShowAsContext();
                 }
-                else
-                {
-                    EditorGUI.PropertyField(position, property);
-                }
+
+                position.x += 3;
+
+                position.width = fullWidth - 20;
+
+                _drawLimitedField[(UnityEventValueLimit)limit.enumValueIndex].Invoke(position, property, (PersistentListenerMode)listenerMode.enumValueIndex);
             }
-
-            private void FindTargets(SerializedProperty sceneGuidProperty, SerializedProperty objectIDProperty, List<UnityEngine.Object> objects)
+            else
             {
-                var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuidProperty.stringValue);
+                EditorGUI.PropertyField(position, property);
+            }
+        }
 
-                for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
+        private void FindTargets(SerializedProperty sceneGuidProperty, SerializedProperty objectIDProperty, List<UnityEngine.Object> objects)
+        {
+            var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuidProperty.stringValue);
+
+            for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
+            {
+                if (EditorSceneManager.GetSceneAt(sceneIndex).path == scenePath)
                 {
-                    if (EditorSceneManager.GetSceneAt(sceneIndex).path == scenePath)
+                    var sceneObjects = EditorSceneManager.GetSceneAt(sceneIndex).GetRootGameObjects();
+
+                    for (int sceneObjectIndex = 0; sceneObjectIndex < sceneObjects.Length; sceneObjectIndex++)
                     {
-                        var sceneObjects = EditorSceneManager.GetSceneAt(sceneIndex).GetRootGameObjects();
+                        var components = sceneObjects[sceneObjectIndex].GetComponents<MonoBehaviour>().ToList();
+                        components.AddRange(sceneObjects[sceneObjectIndex].GetComponentsInChildren<MonoBehaviour>());
 
-                        for (int sceneObjectIndex = 0; sceneObjectIndex < sceneObjects.Length; sceneObjectIndex++)
+                        for (int componentIndex = 0; componentIndex < components.Count; componentIndex++)
                         {
-                            var components = sceneObjects[sceneObjectIndex].GetComponents<MonoBehaviour>().ToList();
-                            components.AddRange(sceneObjects[sceneObjectIndex].GetComponentsInChildren<MonoBehaviour>());
+                            SerializedObject serializedObject = new SerializedObject(components[componentIndex]);
+                            PropertyInfo inspectorModeInfo = typeof(SerializedObject).
+                                GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                            for (int componentIndex = 0; componentIndex < components.Count; componentIndex++)
+                            inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
+
+                            SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
+
+                            int localId = localIdProp.intValue;
+
+                            if (localId == objectIDProperty.intValue)
                             {
-                                SerializedObject serializedObject = new SerializedObject(components[componentIndex]);
-                                PropertyInfo inspectorModeInfo = typeof(SerializedObject).
-                                    GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                                inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
-
-                                SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
-
-                                int localId = localIdProp.intValue;
-
-                                if (localId == objectIDProperty.intValue)
-                                {
-                                    objects.Add(components[componentIndex]);
-                                    break;
-                                }
+                                objects.Add(components[componentIndex]);
+                                break;
                             }
                         }
-
-                        break;
                     }
+
+                    break;
                 }
             }
+        }
 
-            private void SetProperty(SerializedProperty property, UnityEventValueLimit value)
+        private void SetProperty(SerializedProperty property, UnityEventValueLimit value)
+        {
+            if (property.enumValueIndex != (int)value)
             {
-                if (property.enumValueIndex != (int)value)
-                {
-                    property.enumValueIndex = (int)value;
+                property.enumValueIndex = (int)value;
 
-                    property.serializedObject.ApplyModifiedProperties();
-                }
+                property.serializedObject.ApplyModifiedProperties();
             }
+        }
 
-            private Texture GetTexture()
-            {
-                return (Texture)EditorGUIUtility.Load("icons/d__Popup.png");
-            }
+        private Texture GetTexture()
+        {
+            return (Texture)EditorGUIUtility.Load("icons/d__Popup.png");
+        }
 
-            private void GetSubStringBetweenChars(string origin, char start, char end, out string fullMatch, out string insideEncapsulation)
-            {
-                var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
-                fullMatch = match.Groups[0].Value;
-                insideEncapsulation = match.Groups[1].Value;
-            }
+        private void GetSubStringBetweenChars(string origin, char start, char end, out string fullMatch, out string insideEncapsulation)
+        {
+            var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
+            fullMatch = match.Groups[0].Value;
+            insideEncapsulation = match.Groups[1].Value;
         }
     }
 }

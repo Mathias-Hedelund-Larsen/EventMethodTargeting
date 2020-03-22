@@ -7,111 +7,108 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace HephaestusForge
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    [CustomEditor(typeof(EventMethodTargetingData))]
+
+    public class EventMethodTargetingDataInspector : Editor
     {
-        [CustomEditor(typeof(EventMethodTargetingData))]
+        private SerializedObject _target;
 
-        public class EventMethodTargetingDataInspector : Editor
+        private void OnEnable()
         {
-            private SerializedObject _target;
+            _target = new SerializedObject(target);
+        }
 
-            private void OnEnable()
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            var methodTargetingDataArray = _target.FindProperty("_methodTargetingData");
+            List<int> indexesToClear = new List<int>();
+
+            for (int i = methodTargetingDataArray.arraySize - 1; i >= 0; i--)
             {
-                _target = new SerializedObject(target);
-            }
+                var sceneGuid = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue;
+                var objectID = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue;
 
-            public override void OnInspectorGUI()
-            {
-                base.OnInspectorGUI();
-
-                var methodTargetingDataArray = _target.FindProperty("_methodTargetingData");
-                List<int> indexesToClear = new List<int>();
-
-                for (int i = methodTargetingDataArray.arraySize - 1; i >= 0; i--)
+                if (sceneGuid == "None")
                 {
-                    var sceneGuid = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue;
-                    var objectID = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue;
+                    Object obj = (Object)typeof(Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static)
+                    .Invoke(null, new object[] { objectID });
 
-                    if (sceneGuid == "None")
+                    if (!obj)
                     {
-                        Object obj = (Object)typeof(Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static)
-                        .Invoke(null, new object[] { objectID });
+                        indexesToClear.Add(i);
+                    }
+                }
+                else
+                {
+                    var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuid);
+                    List<Scene> openScenes = new List<Scene>();
 
-                        if (!obj)
+                    for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
+                    {
+                        openScenes.Add(EditorSceneManager.GetSceneAt(sceneIndex));
+                    }
+
+                    if (openScenes.Any(s => s.path == scenePath))
+                    {
+                        var rootObjects = openScenes.Find(s => s.path == scenePath).GetRootGameObjects();
+                        PropertyInfo inspectorModeInfo = typeof(SerializedObject).GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        bool exists = false;
+
+                        for (int t = 0; t < rootObjects.Length; t++)
+                        {
+                            var components = rootObjects[t].GetComponents<MonoBehaviour>().ToList();
+
+                            components.AddRange(rootObjects[t].GetComponentsInChildren<MonoBehaviour>());
+
+                            for (int x = 0; x < components.Count; x++)
+                            {
+                                SerializedObject serializedObject = new SerializedObject(components[x]);
+                                inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
+
+                                SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
+
+                                int localId = localIdProp.intValue;
+
+                                if (objectID == localId)
+                                {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!exists)
                         {
                             indexesToClear.Add(i);
                         }
                     }
                     else
                     {
-                        var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuid);
-                        List<Scene> openScenes = new List<Scene>();
+                        var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
 
-                        for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
+                        if (!sceneAsset)
                         {
-                            openScenes.Add(EditorSceneManager.GetSceneAt(sceneIndex));
-                        }
-
-                        if (openScenes.Any(s => s.path == scenePath))
-                        {
-                            var rootObjects = openScenes.Find(s => s.path == scenePath).GetRootGameObjects();
-                            PropertyInfo inspectorModeInfo = typeof(SerializedObject).GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                            bool exists = false;
-
-                            for (int t = 0; t < rootObjects.Length; t++)
-                            {
-                                var components = rootObjects[t].GetComponents<MonoBehaviour>().ToList();
-
-                                components.AddRange(rootObjects[t].GetComponentsInChildren<MonoBehaviour>());
-
-                                for (int x = 0; x < components.Count; x++)
-                                {
-                                    SerializedObject serializedObject = new SerializedObject(components[x]);
-                                    inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
-
-                                    SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
-
-                                    int localId = localIdProp.intValue;
-
-                                    if (objectID == localId)
-                                    {
-                                        exists = true;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!exists)
-                            {
-                                indexesToClear.Add(i);
-                            }
-                        }
-                        else
-                        {
-                            var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
-
-                            if (!sceneAsset)
-                            {
-                                indexesToClear.Add(i);
-                            }
+                            indexesToClear.Add(i);
                         }
                     }
                 }
+            }
 
-                if (indexesToClear.Count > 0)
-                {                    
-                    for (int i = 0; i < indexesToClear.Count; i++)
-                    {
-                        methodTargetingDataArray.DeleteArrayElementAtIndex(indexesToClear[i]);
-                    }
-
-                    _target.ApplyModifiedProperties();
-
-                    AssetDatabase.SaveAssets();
+            if (indexesToClear.Count > 0)
+            {
+                for (int i = 0; i < indexesToClear.Count; i++)
+                {
+                    methodTargetingDataArray.DeleteArrayElementAtIndex(indexesToClear[i]);
                 }
+
+                _target.ApplyModifiedProperties();
+
+                AssetDatabase.SaveAssets();
             }
         }
     }

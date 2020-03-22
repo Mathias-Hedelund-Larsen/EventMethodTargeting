@@ -1,21 +1,18 @@
 ﻿using System;
 using UnityEngine;
 
-namespace HephaestusForge
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    [Serializable]
+    public sealed class EventMethodData
     {
-        [Serializable]
-        public sealed class EventMethodData
-        {
-            [SerializeField]
-            private string _sceneGuid;
+        [SerializeField]
+        private string _sceneGuid;
 
-            [SerializeField]
-            private int _objectID;
+        [SerializeField]
+        private int _objectID;
 
-            [SerializeField]
-            private TargetMethodData[] _targetMethods;
-        }
+        [SerializeField]
+        private TargetMethodData[] _targetMethods;
     }
 }

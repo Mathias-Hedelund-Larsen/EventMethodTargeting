@@ -1,13 +1,10 @@
 ﻿using UnityEngine;
 using System;
 
-namespace HephaestusForge
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    [AttributeUsage(AttributeTargets.Field)]
+    public class EventMethodTargetAttribute : PropertyAttribute
     {
-        [AttributeUsage(AttributeTargets.Field)]
-        public class EventMethodTargetAttribute : PropertyAttribute
-        {
-        }
     }
 }

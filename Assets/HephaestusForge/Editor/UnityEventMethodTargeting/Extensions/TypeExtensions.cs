@@ -1,44 +1,41 @@
 ﻿using System;
 
-namespace HephaestusForge
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    public static class TypeExtensions
     {
-        public static class TypeExtensions
+        public static bool IsSubclassOfRawGeneric(this Type source, Type generic)
         {
-            public static bool IsSubclassOfRawGeneric(this Type source, Type generic)
+            while (source != null && source != typeof(object))
             {
-                while (source != null && source != typeof(object))
+                var current = source.IsGenericType ? source.GetGenericTypeDefinition() : source;
+
+                if (generic == current)
                 {
-                    var current = source.IsGenericType ? source.GetGenericTypeDefinition() : source;
-
-                    if (generic == current)
-                    {
-                        return true;
-                    }
-
-                    source = source.BaseType;
+                    return true;
                 }
 
-                return false;
+                source = source.BaseType;
             }
 
-            public static Type ParentTrueGeneric(this Type source, Type generic)
+            return false;
+        }
+
+        public static Type ParentTrueGeneric(this Type source, Type generic)
+        {
+            while (source != null && source != typeof(object))
             {
-                while (source != null && source != typeof(object))
+                var current = source.IsGenericType ? source.GetGenericTypeDefinition() : source;
+
+                if (generic == current)
                 {
-                    var current = source.IsGenericType ? source.GetGenericTypeDefinition() : source;
-
-                    if (generic == current)
-                    {
-                        return source;
-                    }
-
-                    source = source.BaseType;
+                    return source;
                 }
 
-                return null;
+                source = source.BaseType;
             }
+
+            return null;
         }
     }
 }
