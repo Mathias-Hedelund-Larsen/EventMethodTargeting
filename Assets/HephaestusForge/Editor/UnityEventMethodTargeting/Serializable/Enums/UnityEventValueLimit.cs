@@ -1,13 +1,10 @@
-﻿namespace HephaestusForge
+﻿namespace HephaestusForge.UnityEventMethodTargeting
 {
-    namespace UnityEventMethodTargeting
+    public enum UnityEventValueLimit
     {
-        public enum UnityEventValueLimit
-        {
-            None = 0,
-            SingleValue = 1,
-            Array = 2,
-            Enum = 3
-        }
+        None = 0,
+        SingleValue = 1,
+        Array = 2,
+        Enum = 3
     }
 }

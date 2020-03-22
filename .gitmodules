@@ -4,3 +4,6 @@
 [submodule "GitSubmodules/ReadOnly"]
 	path = GitSubmodules/ReadOnly
 	url = https://github.com/Mathias-Hedelund-Larsen/ReadOnly.git
+[submodule "GitSubmodules/EditorObjectExtension"]
+	path = GitSubmodules/EditorObjectExtension
+	url = https://github.com/Mathias-Hedelund-Larsen/EditorObjectExtension.git
