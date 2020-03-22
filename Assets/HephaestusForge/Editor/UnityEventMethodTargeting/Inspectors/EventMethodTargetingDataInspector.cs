@@ -10,7 +10,6 @@ using UnityEngine.SceneManagement;
 namespace HephaestusForge.UnityEventMethodTargeting
 {
     [CustomEditor(typeof(EventMethodTargetingData))]
-
     public class EventMethodTargetingDataInspector : Editor
     {
         private SerializedObject _target;
@@ -34,8 +33,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 if (sceneGuid == "None")
                 {
-                    Object obj = (Object)typeof(Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static)
-                    .Invoke(null, new object[] { objectID });
+                    Object obj = UnityEditorObjectExtensions.GetObjectByInstanceID(objectID);
 
                     if (!obj)
                     {
@@ -55,7 +53,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     if (openScenes.Any(s => s.path == scenePath))
                     {
                         var rootObjects = openScenes.Find(s => s.path == scenePath).GetRootGameObjects();
-                        PropertyInfo inspectorModeInfo = typeof(SerializedObject).GetProperty("inspectorMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
                         bool exists = false;
 
@@ -67,12 +64,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                             for (int x = 0; x < components.Count; x++)
                             {
-                                SerializedObject serializedObject = new SerializedObject(components[x]);
-                                inspectorModeInfo.SetValue(serializedObject, InspectorMode.Debug, null);
-
-                                SerializedProperty localIdProp = serializedObject.FindProperty("m_LocalIdentfierInFile");   //note the misspelling!
-
-                                int localId = localIdProp.intValue;
+                                int localId = components[x].GetLocalID();                                
 
                                 if (objectID == localId)
                                 {

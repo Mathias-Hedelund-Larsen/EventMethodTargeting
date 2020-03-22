@@ -15,13 +15,13 @@ using static UnityEditor.SceneManagement.EditorSceneManager;
 namespace HephaestusForge.UnityEventMethodTargeting
 {
     [CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
-
     public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
     {
-        private float _extraHeight;
-        private SerializedObject _target;
         private static SerializedObject _eventMethodTargeting;
         private static EventMethodTargetingData _eventMethodTargetingAsset;
+
+        private float _extraHeight;
+        private SerializedObject _target;
         private UnityEventDrawer _eventDrawer = new UnityEventDrawer();
         private TargetMethodDataPropertyDrawer _targetMethodDataPropertyDrawer = new TargetMethodDataPropertyDrawer();
         private FieldInfo _guidField = typeof(EventMethodData).GetField("_sceneGuid", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -137,32 +137,37 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
             };
 
-        public EventMethodTargetAttributePropertyDrawer()
+        private string _propertyPath;
+        private List<string> _initialized = new List<string>();
+
+        private void Init(SerializedProperty property)
         {
+            if (!_eventMethodTargetingAsset)
+            {
+                _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
+                      AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log("Property drawer constructor");
-#endif
-
+                _eventMethodTargeting = new SerializedObject(_eventMethodTargetingAsset);
+            }
         }
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            _propertyPath = property.propertyPath;
+            _target = property.serializedObject.targetObject;
+
+            if (!_initialized.Contains(_propertyPath))
+            {
+                _initialized.Add(_propertyPath);
+
+                Init(property);
+            }
+
             if (fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) ||
                 fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
                 fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
             {
                 _extraHeight = 0;
-
-                if (!_eventMethodTargetingAsset)
-                {
-                    _eventMethodTargetingAsset = AssetDatabase.LoadAssetAtPath<EventMethodTargetingData>(
-                          AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodTargetingData")[0]));
-                }
-
-                if (_eventMethodTargeting == null)
-                {
-                    _eventMethodTargeting = new SerializedObject(_eventMethodTargetingAsset);
-                }
 
                 var methodTargetingDataArray = _eventMethodTargeting.FindProperty("_methodTargetingData");
 
