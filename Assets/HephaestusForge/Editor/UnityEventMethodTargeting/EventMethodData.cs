@@ -13,6 +13,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private int _objectID;
 
         [SerializeField]
-        private TargetMethodData[] _targetMethods;
+        private bool _limitByEnum;
+
+        [SerializeField]
+        private string _enumType;
+
+        [SerializeField]
+        private UnityEngine.Object _targetOfEvent;
+
+        [SerializeField]
+        private string _methodName;
     }
 }
