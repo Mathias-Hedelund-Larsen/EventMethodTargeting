@@ -96,8 +96,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                     if (methods.Length > 0)
                     {
-                        persistentMethods.Clear();
-
                         for (int i = 0; i < methods.Length; i++)
                         {
                             var parameters = methods[i].GetParameters();
@@ -106,14 +104,18 @@ namespace HephaestusForge.UnityEventMethodTargeting
                             {
                                 if(parameters.Length == amount)
                                 {
-
+                                    if(IsEventAndMethodParametersEqual(fieldInfo.FieldType, parameters))
+                                    {
+                                        dynamicMethods.Add(new MethodInfo(targetProperty.objectReferenceValue, $"{targetProperty.objectReferenceValue.GetType().ToString()}",
+                                            $"{methods[i].Name}", methods[i].GetParameters()){ IsDynamic = true });
+                                    }
                                 }
                             }
 
                             if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
                             {
                                 persistentMethods.Add(new MethodInfo(targetProperty.objectReferenceValue, $"{targetProperty.objectReferenceValue.GetType().ToString()}",
-                                    $"{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                                    $"{methods[i].Name}", methods[i].GetParameters()));
                             }
                         }
                     }
@@ -129,14 +131,26 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                         if (methods.Length > 0)
                         {
-                            persistentMethods.Clear();
-
                             for (int i = 0; i < methods.Length; i++)
                             {
-                                if (methods[i].GetParameters().Length == 0)
+                                var parameters = methods[i].GetParameters();
+
+                                if (DoesTakeParameter(out int amount))
+                                {
+                                    if (parameters.Length == amount)
+                                    {
+                                        if (IsEventAndMethodParametersEqual(fieldInfo.FieldType, parameters))
+                                        {
+                                            dynamicMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
+                                                $"{methods[i].Name}", methods[i].GetParameters()){ IsDynamic = true });
+                                        }
+                                    }
+                                }
+
+                                if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
                                 {
                                     persistentMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
-                                    $"{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                                        $"{methods[i].Name}", methods[i].GetParameters()));
                                 }
                             }
                         }
@@ -155,6 +169,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }            
 
             GenericMenu dropDownMenu = new GenericMenu();
+
+            for (int i = 0; i < dynamicMethods.Count; i++)
+            {
+                var instance = dynamicMethods[i];
+                instance.TargetProperty = targetProperty;
+                instance.MethodNameProperty = methodNameProperty;
+                instance.ListenerModeProperty = listenerModeProperty;
+                dropDownMenu.AddItem(new GUIContent($"{dynamicMethods[i].ClassName}/{dynamicMethods[i].MethodName}"), false, ChosenMethod, instance);
+            }
 
             for (int i = 0; i < persistentMethods.Count; i++)
             {
@@ -175,6 +198,26 @@ namespace HephaestusForge.UnityEventMethodTargeting
             GUI.enabled = true;
         }
 
+        private bool IsEventAndMethodParametersEqual(Type fieldType, ParameterInfo[] parameters)
+        {
+            if(parameters.Length == 1)
+            {
+                return parameters.Select(p => p.ParameterType).SequenceEqual(fieldType.ParentTrueGeneric(typeof(UnityEvent<>)).GetGenericArguments());
+            }
+            else if (parameters.Length == 2)
+            {
+                return parameters.Select(p => p.ParameterType).SequenceEqual(fieldType.ParentTrueGeneric(typeof(UnityEvent<,>)).GetGenericArguments());
+            }
+            else if (parameters.Length == 3)
+            {
+                return parameters.Select(p => p.ParameterType).SequenceEqual(fieldType.ParentTrueGeneric(typeof(UnityEvent<,,>)).GetGenericArguments());
+            }
+            else
+            {
+                return parameters.Select(p => p.ParameterType).SequenceEqual(fieldType.ParentTrueGeneric(typeof(UnityEvent<,,,>)).GetGenericArguments());
+            }
+        }
+
         private void ChosenMethod(object methodInfo)
         {
             MethodInfo info = (MethodInfo)methodInfo;
@@ -182,14 +225,46 @@ namespace HephaestusForge.UnityEventMethodTargeting
             info.TargetProperty.objectReferenceValue = info.Target;
             info.MethodNameProperty.stringValue = info.MethodName;
 
-            info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Void;
+            if (info.IsDynamic)
+            {
+                info.ListenerModeProperty.intValue = (int)PersistentListenerMode.EventDefined;
+            }
+            else
+            {
+                if(info.Arguments.Length == 0)
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Void;
+                }
+                else if(info.Arguments[0].ParameterType == typeof(int))
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Int;
+                }
+                else if (info.Arguments[0].ParameterType == typeof(float))
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Float;
+                }
+                else if (info.Arguments[0].ParameterType == typeof(bool))
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Bool;
+                }
+                else if (info.Arguments[0].ParameterType == typeof(string))
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.String;
+                }
+                else if (info.Arguments[0].ParameterType == typeof(UnityEngine.Object))
+                {
+                    info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Object;
+                }
+            }
+
+            info.ListenerModeProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
         {
             list.serializedProperty.arraySize++;
 
-            EditorUtility.SetDirty(list.serializedProperty.serializedObject.targetObject);
+            list.serializedProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void OnRemoveClicked(ReorderableList list)
@@ -205,7 +280,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             if (FieldTypeIsUnityEvent())
             {
-                propertyHeight = 70;
+                propertyHeight = 75;
 
                 if (!_initialized.ContainsKey(_propertyPath))
                 {
