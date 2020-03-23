@@ -243,6 +243,22 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 GenericMenu dropDownMenu = new GenericMenu();
 
+                for (int i = 0; i < 31; i++)  //user defined layers start with layer 8 and unity supports 31 layers
+                {
+                    var layerName = LayerMask.LayerToName(i); //get the name of the layer
+
+                    if (layerName.Length > 0) //only add the layer if it has been named
+                    {
+                        dropDownMenu.AddItem(new GUIContent($"UnityEngine.Layers/{layerName}"), false, ChoseLayerVal,
+                            new Tuple<int, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>(i, mode,
+                            argumentsProperty, enumTypeValueProperty, enumAssemblyProperty));
+                    }
+                }
+
+                var tags = InternalEditorUtility.tags;
+
+
+
                 foreach (var item in _availableEnums)
                 {
                     for (int i = 0; i < item.Value.Count; i++)
@@ -255,6 +271,27 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 dropDownMenu.ShowAsContext();
             }
+        }
+
+        private void ChoseLayerVal(object tuple)
+        {
+            var data = (Tuple<int, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>)tuple;
+
+            if(data.Item2 == PersistentListenerMode.Int)
+            {
+                data.Item3.FindPropertyRelative("m_IntArgument").intValue = data.Item1;
+                data.Item4.stringValue = $"Layer.{LayerMask.LayerToName(data.Item1)}";
+            }
+            else
+            {
+                data.Item3.FindPropertyRelative("m_StringArgument").stringValue = LayerMask.LayerToName(data.Item1);
+                data.Item4.stringValue = $"Layer.{LayerMask.LayerToName(data.Item1)}";
+            }
+
+            data.Item5.stringValue = "UnityEngine";
+
+            data.Item3.serializedObject.ApplyModifiedProperties();
+            data.Item4.serializedObject.ApplyModifiedProperties();
         }
 
         private void ChoseEnumVal(object tuple)
