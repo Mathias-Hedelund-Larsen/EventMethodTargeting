@@ -28,6 +28,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
+            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing;
 
             return list;
         }
@@ -76,10 +77,12 @@ namespace HephaestusForge.UnityEventMethodTargeting
             _propertyName = property.displayName;
             _propertyPath = property.propertyPath;
 
-            int propertyHeight = 60;
+            int propertyHeight = EditorGUIUtility.singleLineHeight;
 
             if (FieldTypeIsUnityEvent())
             {
+                propertyHeight = 70;
+
                 if (!_initialized.ContainsKey(_propertyPath))
                 {
                     _initialized.Add(_propertyPath, Init(property));
