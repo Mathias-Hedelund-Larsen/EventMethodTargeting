@@ -30,7 +30,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
-            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 3;            
+            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;            
 
             return list;
         }
@@ -50,7 +50,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var methodNameProperty = persistantCallProperty.FindPropertyRelative("m_MethodName");
             var listenerModeProperty = persistantCallProperty.FindPropertyRelative("m_Mode");
             var callStateProperty = persistantCallProperty.FindPropertyRelative("m_CallState");
-            var argumentsProperty = persistantCallProperty.FindPropertyRelative("m_Arguments ");
+            var argumentsProperty = persistantCallProperty.FindPropertyRelative("m_Arguments");
 
             rect.height = EditorGUIUtility.singleLineHeight;
 
@@ -70,32 +70,39 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += rect.width + 5;
             rect.width *= 2;
 
-            PersistentListenerMode mode = (PersistentListenerMode)listenerModeProperty.intValue;
-
-            EditorGUI.BeginChangeCheck();
-
-            switch (mode)
+            if (targetProperty.objectReferenceValue)
             {
-                case PersistentListenerMode.Object:
-                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
-                    break;
-                case PersistentListenerMode.Int:
-                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
-                    break;
-                case PersistentListenerMode.Float:
-                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
-                    break;
-                case PersistentListenerMode.String:
-                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
-                    break;
-                case PersistentListenerMode.Bool:
-                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
-                    break;
+                PersistentListenerMode mode = (PersistentListenerMode)listenerModeProperty.intValue;
+
+                EditorGUI.BeginChangeCheck();
+
+                switch (mode)
+                {
+                    case PersistentListenerMode.Object:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                        break;
+                    case PersistentListenerMode.Int:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
+                        break;
+                    case PersistentListenerMode.Float:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
+                        break;
+                    case PersistentListenerMode.String:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
+                        break;
+                    case PersistentListenerMode.Bool:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
+                        break;
+                }
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    targetProperty.serializedObject.ApplyModifiedProperties();
+                }
             }
-
-            if (EditorGUI.EndChangeCheck())
+            else
             {
-                targetProperty.serializedObject.ApplyModifiedProperties();
+                listenerModeProperty.intValue = (int)PersistentListenerMode.Void;
             }
         }
 
@@ -318,7 +325,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             if (FieldTypeIsUnityEvent())
             {
-                propertyHeight = 75;
+                propertyHeight = 80;
 
                 if (!_initialized.ContainsKey(_propertyPath))
                 {
