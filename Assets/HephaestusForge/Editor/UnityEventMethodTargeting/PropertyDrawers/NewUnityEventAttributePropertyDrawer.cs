@@ -53,11 +53,20 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.height = EditorGUIUtility.singleLineHeight;
 
+            DrawTopLine(rect, targetProperty, methodNameProperty, callStateProperty);            
+
+            rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+
+            EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
+        }
+
+        private void DrawTopLine(Rect rect, SerializedProperty targetProperty, SerializedProperty methodNameProperty, SerializedProperty callStateProperty)
+        {
             rect.width = rect.width / 3 - 5;
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
-            
-            List<string> methodNames = new List<string>() { "No target"};
+
+            List<string> methodNames = new List<string>() { "No target" };
 
             if (targetProperty.objectReferenceValue)
             {
@@ -65,7 +74,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     var methods = targetProperty.objectReferenceValue.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-                    if(methods.Length > 0)
+                    if (methods.Length > 0)
                     {
                         methodNames.Clear();
 
@@ -75,7 +84,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         }
                     }
                 }
-                else if(targetProperty.objectReferenceValue is GameObject)
+                else if (targetProperty.objectReferenceValue is GameObject)
                 {
                     var components = (targetProperty.objectReferenceValue as GameObject).GetComponents<Component>();
 
@@ -101,11 +110,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             int methodNameIndex = methodNames.IndexOf(methodNameProperty.stringValue);
 
+            if (methodNameIndex < 0) methodNameIndex = 0;
+
             methodNameProperty.stringValue = methodNames[EditorGUI.Popup(rect, methodNameIndex, methodNames.ToArray())];
-
-            rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-
-            EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
