@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -55,6 +56,52 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.width = rect.width / 3 - 5;
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
+            
+            List<string> methodNames = new List<string>() { "No target"};
+
+            if (targetProperty.objectReferenceValue)
+            {
+                if (targetProperty.objectReferenceValue is ScriptableObject)
+                {
+                    var methods = targetProperty.objectReferenceValue.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if(methods.Length > 0)
+                    {
+                        methodNames.Clear();
+
+                        for (int i = 0; i < methods.Length; i++)
+                        {
+                            methodNames.Add($"{targetProperty.objectReferenceValue.name}.{methods[i].Name}");
+                        }
+                    }
+                }
+                else if(targetProperty.objectReferenceValue is GameObject)
+                {
+                    var components = (targetProperty.objectReferenceValue as GameObject).GetComponents<Component>();
+
+                    for (int componentIndex = 0; componentIndex < components.Length; componentIndex++)
+                    {
+                        var methods = components[componentIndex].GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        if (methods.Length > 0)
+                        {
+                            methodNames.Clear();
+
+                            for (int i = 0; i < methods.Length; i++)
+                            {
+                                methodNames.Add($"{components[componentIndex].GetType().ToString()}.{methods[i].Name}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            rect.x += rect.width + 5;
+            rect.width *= 2;
+
+            int methodNameIndex = methodNames.IndexOf(methodNameProperty.stringValue);
+
+            methodNameProperty.stringValue = methodNames[EditorGUI.Popup(rect, methodNameIndex, methodNames.ToArray())];
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
