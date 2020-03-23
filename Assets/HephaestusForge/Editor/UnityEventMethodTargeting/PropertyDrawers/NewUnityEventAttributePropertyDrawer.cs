@@ -15,10 +15,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
     {
         private string _propertyName;
         private string _propertyPath;
-        private Dictionary<string, ReorderableList> _initialized = new Dictionary<string, ReorderableList>();
+        private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
         private static List<Type> _availableEnums;
-        private static EventMethodDataHandler _eventMethod;
+        private static SerializedObject _eventMethod;
 
         private ReorderableList Init(SerializedProperty property)
         {            
@@ -41,9 +41,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 GetEnumsInAssemblies();
             }
 
-            if (!_eventMethod)
+            if (_eventMethod == null)
             {
-                //_eventMethod = assetd
+                _eventMethod = new SerializedObject(
+                    AssetDatabase.LoadAssetAtPath<EventMethodDataHandler>(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:EventMethodDataHandler")[0])));
             }
 
             return list;
@@ -93,7 +94,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
-            var persistantCallProperty = _initialized[_propertyPath].serializedProperty.GetArrayElementAtIndex(index);
+            var persistantCallProperty = _initialized[_propertyPath].Item3.serializedProperty.GetArrayElementAtIndex(index);
 
             var targetProperty = persistantCallProperty.FindPropertyRelative("m_Target");
             var methodNameProperty = persistantCallProperty.FindPropertyRelative("m_MethodName");
@@ -380,10 +381,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 if (!_initialized.ContainsKey(_propertyPath))
                 {
-                    _initialized.Add(_propertyPath, Init(property));
+                    property.serializedObject.targetObject.GetSceneGuidAndObjectID(out string sceneGuid, out int objectID);
+                    _initialized.Add(_propertyPath, new Tuple<int, string, ReorderableList>(objectID, sceneGuid, Init(property)));
                 }
 
-                int count = _initialized[_propertyPath].count - 1;
+                int count = _initialized[_propertyPath].Item3.count - 1;
 
                 count = count < 0 ? 0 : count;
 
@@ -402,10 +404,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 if (!_initialized.ContainsKey(_propertyPath))
                 {
-                    _initialized.Add(_propertyPath, Init(property));
+                    property.serializedObject.targetObject.GetSceneGuidAndObjectID(out string sceneGuid, out int objectID);
+                    _initialized.Add(_propertyPath, new Tuple<int, string, ReorderableList>(objectID, sceneGuid, Init(property)));
                 }
 
-                _initialized[_propertyPath].DoList(position);
+                _initialized[_propertyPath].Item3.DoList(position);
             }
         }
 
