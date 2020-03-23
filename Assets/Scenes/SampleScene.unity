@@ -1199,7 +1199,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _event:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 880101059}
+        m_MethodName: TakeInt
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &905542059
 GameObject:
   m_ObjectHideFlags: 0

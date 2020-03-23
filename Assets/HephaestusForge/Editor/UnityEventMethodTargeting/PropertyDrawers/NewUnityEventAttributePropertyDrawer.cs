@@ -69,7 +69,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.FullName.Contains("Assembly-CSharp") && !a.FullName.Contains("Editor") ||
-                assemblyObjects.Any(ao => ao.name.Contains(a.FullName))).ToArray();
+                assemblyObjects.Any(ao => ao.name.Contains(a.FullName)) || a.FullName.Contains("UnityEngine.CoreModule")).ToArray();
 
             for (int i = 0; i < assemblies.Length; i++)
             {
@@ -230,7 +230,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             if (string.IsNullOrEmpty(enumTypeValueProperty.stringValue) && string.IsNullOrEmpty(enumAssemblyProperty.stringValue))
             {
                 var enumType = _availableEnums.Keys.ToArray()[0];
-                enumTypeValueProperty.stringValue = $"{enumType.FullName}.{_availableEnums[enumType][0]}";
+                enumTypeValueProperty.stringValue = $"{enumType.Name}.{_availableEnums[enumType][0]}";
                 enumAssemblyProperty.stringValue = enumType.Assembly.FullName;
             }
 
