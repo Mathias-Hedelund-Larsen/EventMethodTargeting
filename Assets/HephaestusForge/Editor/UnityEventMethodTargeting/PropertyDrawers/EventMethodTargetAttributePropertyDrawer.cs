@@ -120,10 +120,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
 
-            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty);
+            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty, index);
         }
 
-        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty)
+        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty, int index)
         {
             rect.width = rect.width / 3 - 5;
 
@@ -144,13 +144,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.Int:
-                        IntOrStringDraw(rect, argumentsProperty, mode);
+                        IntOrStringDraw(rect, argumentsProperty, mode, index);
                         break;
                     case PersistentListenerMode.Float:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.String:
-                        IntOrStringDraw(rect, argumentsProperty, mode);
+                        IntOrStringDraw(rect, argumentsProperty, mode, index);
                         break;
                     case PersistentListenerMode.Bool:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
@@ -168,7 +168,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
-        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode, int listIndex)
         {
             var width = rect.width;
             rect.width = 20;
@@ -178,7 +178,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var eventMethodData = arrayProperty.FindInArray((sProp) =>
             {
                 return sProp.FindPropertyRelative("_sceneGuid").stringValue == _initialized[_propertyPath].Item2 &&
-                sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue == _propertyPath;
+                sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue == 
+                $"{_propertyPath}.Array[{listIndex}]";
             }, out int index);
 
             if(index == -1)
@@ -190,7 +191,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
                 eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
-                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = _propertyPath;
+                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_propertyPath}.Array[{listIndex}]";
 
                 _eventMethod.ApplyModifiedProperties();
             }
