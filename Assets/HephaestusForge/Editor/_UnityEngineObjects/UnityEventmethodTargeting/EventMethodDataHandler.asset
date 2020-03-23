@@ -12,4 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8da635c56ba64f4291cf29b76889e89, type: 3}
   m_Name: EventMethodDataHandler
   m_EditorClassIdentifier: 
-  _methodTargetingData: []
+  _methodTargetingData:
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 880101059
+    _limitByEnum: 1
+    _enumTypeValue: System.Threading.LockRecursionPolicy.NoRecursion
+    _enumAssembly: System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+    _propertyPath: _event

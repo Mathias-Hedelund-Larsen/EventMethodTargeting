@@ -18,7 +18,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
         private static SerializedObject _eventMethod;
-        private static Dictionary<Type, Enum[]> _availableEnums;
+        private static Dictionary<Type, List<Enum>> _availableEnums;
 
         private ReorderableList Init(SerializedProperty property)
         {            
@@ -37,7 +37,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             
             if(_availableEnums == null)
             {
-                _availableEnums = new Dictionary<Type, Enum[]>();
+                _availableEnums = new Dictionary<Type, List<Enum>>();
                 GetEnumsInAssemblies();
             }
 
@@ -69,7 +69,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.FullName.Contains("Assembly-CSharp") && !a.FullName.Contains("Editor") ||
-                assemblyObjects.Any(ao => ao.name.Contains(a.FullName)) || a.FullName.Split('.')[0].Contains("System")).ToArray();
+                assemblyObjects.Any(ao => ao.name.Contains(a.FullName))).ToArray();
 
             for (int i = 0; i < assemblies.Length; i++)
             {
@@ -79,7 +79,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     if (assemblyClasses[t].IsEnum)
                     {
-                        _availableEnums.Add(assemblyClasses[t], (Enum[])Enum.GetValues(assemblyClasses[t]));                        
+                        var enumValues = new List<Enum>();
+                        var values = Enum.GetValues(assemblyClasses[t]);
+
+                        for (int v = 0; v < values.Length; v++)
+                        {
+                            enumValues.Add((Enum)values.GetValue(v));
+                        }
+
+                        _availableEnums.Add(assemblyClasses[t], enumValues);
                     }
                 }
             }
@@ -537,7 +545,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private void OnLostInspectorFocus()
         {
-
+            _availableEnums = null;
+            _eventMethod = null;
         }
     }
 }
