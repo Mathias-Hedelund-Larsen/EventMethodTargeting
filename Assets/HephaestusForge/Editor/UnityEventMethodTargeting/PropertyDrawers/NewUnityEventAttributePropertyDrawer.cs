@@ -17,7 +17,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private string _propertyPath;
         private Dictionary<string, ReorderableList> _initialized = new Dictionary<string, ReorderableList>();
 
-        private static List<Type> AvailableEnums;
+        private static List<Type> _availableEnums;
+        private static EventMethodDataHandler _eventMethod;
 
         private ReorderableList Init(SerializedProperty property)
         {            
@@ -34,10 +35,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.onRemoveCallback = OnRemoveClicked;
             list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;  
             
-            if(AvailableEnums == null)
+            if(_availableEnums == null)
             {
-                AvailableEnums = new List<Type>();
+                _availableEnums = new List<Type>();
                 GetEnumsInAssemblies();
+            }
+
+            if (!_eventMethod)
+            {
+                //_eventMethod = assetd
             }
 
             return list;
@@ -72,7 +78,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     if (assemblyClasses[t].IsEnum)
                     {
-                        AvailableEnums.Add(assemblyClasses[t]);
+                        _availableEnums.Add(assemblyClasses[t]);
                     }
                 }
             }

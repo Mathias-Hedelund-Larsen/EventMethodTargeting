@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace HephaestusForge.UnityEventMethodTargeting
 {
-    [CustomEditor(typeof(EventMethodTargetingData))]
+    [CustomEditor(typeof(EventMethodDataHandler))]
     public class EventMethodTargetingDataInspector : Editor
     {
         private SerializedObject _target;
