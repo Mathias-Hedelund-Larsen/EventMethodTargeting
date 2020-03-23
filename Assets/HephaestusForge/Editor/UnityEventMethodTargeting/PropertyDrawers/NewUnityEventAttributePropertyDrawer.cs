@@ -53,11 +53,14 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.width = rect.width / 3 - 5;
 
-            EditorGUI.PropertyField(rect, callStateProperty);
+            EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
-        { 
+        {
+            list.serializedProperty.arraySize++;
+
+            EditorUtility.SetDirty(list.serializedProperty.serializedObject.targetObject);
         }
 
         private void OnRemoveClicked(ReorderableList list)
@@ -68,7 +71,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
         {
             _propertyName = property.displayName;
             _propertyPath = property.propertyPath;
-           
+
+            int propertyHeight = 60;
+
             if (FieldTypeIsUnityEvent())
             {
                 if (!_initialized.ContainsKey(_propertyPath))
@@ -77,7 +82,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
             }
 
-            return 0;
+            return propertyHeight;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -92,7 +97,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     _initialized.Add(_propertyPath, Init(property));
                 }
 
-                _initialized[_propertyPath].DoLayoutList();
+                _initialized[_propertyPath].DoList(position);
             }
         }
 
