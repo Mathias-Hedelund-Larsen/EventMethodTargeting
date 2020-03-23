@@ -1201,8 +1201,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 880101059}
-        m_MethodName: TakeInt
-        m_Mode: 3
+        m_MethodName: TakeString
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 

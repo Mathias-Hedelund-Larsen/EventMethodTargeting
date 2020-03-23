@@ -161,13 +161,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var width = rect.width;
             rect.width = 20;
 
-            var eventMethodData = _eventMethod.FindProperty("_methodTargetingData").FindInArray((sProp) =>
+            var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
+
+            var eventMethodData = arrayProperty.FindInArray((sProp) =>
             {
                 return sProp.FindPropertyRelative("_sceneGuid").stringValue == _initialized[_propertyPath].Item2 &&
-                sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1;
+                sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue == _propertyPath;
             }, out int index);
 
-            if(eventMethodData != null)
+            if(eventMethodData == arrayProperty)
             {
                 var data = _eventMethod.FindProperty("_methodTargetingData");
                 data.arraySize++;
@@ -176,6 +178,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
                 eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
+                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = _propertyPath;
+
+                _eventMethod.ApplyModifiedProperties();
             }
 
             var limitByEnum = eventMethodData.FindPropertyRelative("_limitByEnum");
