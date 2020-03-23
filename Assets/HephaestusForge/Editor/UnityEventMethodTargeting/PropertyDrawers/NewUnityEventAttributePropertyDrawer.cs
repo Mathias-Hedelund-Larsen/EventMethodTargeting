@@ -77,6 +77,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 for (int t = 0; t < assemblyClasses.Length; t++)
                 {
+                    if(assemblyClasses[t].Assembly.FullName.Contains("UnityEngine.CoreModule") && !assemblyClasses[t].FullName.Contains("KeyCode"))
+                    {
+                        continue;
+                    }
+
                     if (assemblyClasses[t].IsEnum && assemblyClasses[t].GetEnumUnderlyingType() == typeof(int))
                     {
                         var enumValues = new List<Enum>();

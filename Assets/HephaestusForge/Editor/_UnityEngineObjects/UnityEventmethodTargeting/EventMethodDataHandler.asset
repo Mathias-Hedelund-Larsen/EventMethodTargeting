@@ -15,7 +15,7 @@ MonoBehaviour:
   _methodTargetingData:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 880101059
-    _limitByEnum: 1
-    _enumTypeValue: KeyCode.Equals
+    _limitByEnum: 0
+    _enumTypeValue: KeyCode.Slash
     _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _propertyPath: _event

@@ -1201,14 +1201,14 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 880101059}
-        m_MethodName: TakeInt
-        m_Mode: 3
+        m_MethodName: TakeString
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 61
+          m_IntArgument: 50
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: Slash
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &905542059
