@@ -34,6 +34,6 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 880101059
     _limitByEnum: 1
-    _enumTypeValue: Layer.Ignore Raycast
+    _enumTypeValue: Tag.Player
     _enumAssembly: UnityEngine
     _propertyPath: _event.Array[1]
