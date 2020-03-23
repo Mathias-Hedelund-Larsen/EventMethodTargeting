@@ -213,10 +213,14 @@ namespace HephaestusForge.UnityEventMethodTargeting
             for (int i = 0; i < persistentMethods.Count; i++)
             {
                 var instance = persistentMethods[i];
-                instance.TargetProperty = targetProperty;
-                instance.MethodNameProperty = methodNameProperty;
-                instance.ListenerModeProperty = listenerModeProperty;
-                dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
+
+                if (instance.MethodName != "No target")
+                {
+                    instance.TargetProperty = targetProperty;
+                    instance.MethodNameProperty = methodNameProperty;
+                    instance.ListenerModeProperty = listenerModeProperty;
+                    dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
+                }
             }
 
             GUI.enabled = (persistentMethods.Count > 1 || dynamicMethods.Count > 0);
@@ -294,7 +298,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
         {
             list.serializedProperty.arraySize++;
-            list.serializedProperty.FindPropertyRelative("m_CallState").intValue = (int)UnityEventCallState.RuntimeOnly;
+
+            list.serializedProperty.GetArrayElementAtIndex(list.serializedProperty.arraySize -1).
+                FindPropertyRelative("m_CallState").intValue = (int)UnityEventCallState.RuntimeOnly;
+
             list.serializedProperty.serializedObject.ApplyModifiedProperties();
         }
 
