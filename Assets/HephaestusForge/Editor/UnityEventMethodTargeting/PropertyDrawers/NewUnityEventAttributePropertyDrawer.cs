@@ -75,7 +75,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
 
-            List<string> methodNames = new List<string>() { "No target" };
+            List<MethodInfo> methodNames = new List<MethodInfo>() { MethodInfo.NoTarget()};
 
             if (targetProperty.objectReferenceValue)
             {
@@ -90,7 +90,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                         for (int i = 0; i < methods.Length; i++)
                         {
-                            methodNames.Add($"{targetProperty.objectReferenceValue.name}.{methods[i].Name}");
+                            methodNames.Add(new MethodInfo(targetProperty.objectReferenceValue, "", $"{targetProperty.objectReferenceValue.name}.{methods[i].Name}",
+                                methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
                         }
                     }
                 }
@@ -109,7 +110,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                             for (int i = 0; i < methods.Length; i++)
                             {
-                                methodNames.Add($"{components[componentIndex].GetType().ToString()}.{methods[i].Name}");
+                                methodNames.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(), 
+                                    $"{components[componentIndex].GetType().ToString()}.{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
                             }
                         }
                     }
@@ -119,11 +121,31 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += rect.width + 5;
             rect.width *= 2;
 
-            int methodNameIndex = methodNames.IndexOf(methodNameProperty.stringValue);
+            var methodInfo = methodNames.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName == methodNameProperty.stringValue);
+            int methodNameIndex = 0;
 
-            if (methodNameIndex < 0) methodNameIndex = 0;
+            if (methodInfo)
+            {
+                methodNameIndex = methodNames.IndexOf(methodInfo);
+            }
 
-            methodNameProperty.stringValue = methodNames[EditorGUI.Popup(rect, methodNameIndex, methodNames.ToArray())];
+            GenericMenu dropDownMenu = new GenericMenu();
+
+            for (int i = 0; i < methodNames.Count; i++)
+            {
+                dropDownMenu.AddItem(new GUIContent($"{methodNames[i].ClassName}/{methodNames[i].MethodName}"), false, ChoseMethod, methodNames[i]);
+            }
+
+            if (EditorGUI.DropdownButton(rect, new GUIContent(methodInfo.MethodName), FocusType.Keyboard))
+            {
+                dropDownMenu.ShowAsContext();
+            }
+            //methodNameProperty.stringValue = methodNames[EditorGUI.Popup(rect, methodNameIndex, methodNames.Select(m => m.MethodName).ToArray())];
+        }
+
+        private void ChoseMethod(object methodInfo)
+        {
+            throw new NotImplementedException();
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
