@@ -20,7 +20,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
             Selection.selectionChanged -= OnLostInspectorFocus;
             Selection.selectionChanged += OnLostInspectorFocus;
 
-            var list = new ReorderableList(property.serializedObject, property.FindPropertyRelative("m_PersistentCalls").FindPropertyRelative("m_Calls"));
+            var callsProperty = property.FindPropertyRelative("m_PersistentCalls").FindPropertyRelative("m_Calls");
+
+            var list = new ReorderableList(property.serializedObject, callsProperty);
 
             list.drawHeaderCallback = DrawHeader;
             list.drawElementCallback = DrawListElement;

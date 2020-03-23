@@ -14,7 +14,7 @@ using static UnityEditor.SceneManagement.EditorSceneManager;
 
 namespace HephaestusForge.UnityEventMethodTargeting
 {
-    [CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
+    //[CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
     public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
     {
         private static SerializedObject _eventMethodTargeting;
