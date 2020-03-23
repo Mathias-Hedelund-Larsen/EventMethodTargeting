@@ -255,9 +255,17 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     }
                 }
 
-                var tags = InternalEditorUtility.tags;
+                if (mode == PersistentListenerMode.String)
+                {
+                    var tags = InternalEditorUtility.tags;
 
-
+                    for (int i = 0; i < tags.Length; i++)
+                    {
+                        dropDownMenu.AddItem(new GUIContent($"UnityEngine.Tag/{tags[i]}"), false, ChoseTagVal,
+                                new Tuple<int, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>(i, mode,
+                                argumentsProperty, enumTypeValueProperty, enumAssemblyProperty));
+                    }
+                }
 
                 foreach (var item in _availableEnums)
                 {
@@ -271,6 +279,19 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 dropDownMenu.ShowAsContext();
             }
+        }
+
+        private void ChoseTagVal(object tuple)
+        {
+            var data = (Tuple<int, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>)tuple;
+
+            data.Item3.FindPropertyRelative("m_StringArgument").stringValue = InternalEditorUtility.tags[data.Item1];
+            data.Item4.stringValue = $"Tag.{InternalEditorUtility.tags[data.Item1]}";
+
+            data.Item5.stringValue = "UnityEngine";
+
+            data.Item3.serializedObject.ApplyModifiedProperties();
+            data.Item4.serializedObject.ApplyModifiedProperties();
         }
 
         private void ChoseLayerVal(object tuple)
