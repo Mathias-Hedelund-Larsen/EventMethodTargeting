@@ -77,7 +77,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 for (int t = 0; t < assemblyClasses.Length; t++)
                 {
-                    if (assemblyClasses[t].IsEnum)
+                    if (assemblyClasses[t].IsEnum && assemblyClasses[t].GetEnumUnderlyingType() == typeof(int))
                     {
                         var enumValues = new List<Enum>();
                         var values = Enum.GetValues(assemblyClasses[t]);
@@ -236,7 +236,40 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             if (EditorGUI.DropdownButton(rect, new GUIContent(enumTypeValueProperty.stringValue), FocusType.Keyboard))
             {
+                GenericMenu dropDownMenu = new GenericMenu();
+
+                foreach (var item in _availableEnums)
+                {
+                    for (int i = 0; i < item.Value.Count; i++)
+                    {
+                        dropDownMenu.AddItem(new GUIContent($"{item.Key.Name}/{item.Value[i].ToString()}"), false, ChoseEnumVal, 
+                            new Tuple<Type, Enum, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>
+                            (item.Key, item.Value[i], mode, argumentsProperty, enumTypeValueProperty, enumAssemblyProperty));
+                    }
+                }
+
+                dropDownMenu.ShowAsContext();
             }
+        }
+
+        private void ChoseEnumVal(object tuple)
+        {
+            var data = (Tuple<Type, Enum, PersistentListenerMode, SerializedProperty, SerializedProperty, SerializedProperty>)tuple;
+
+            if(data.Item3 == PersistentListenerMode.Int)
+            {
+                data.Item4.FindPropertyRelative("m_IntArgument").intValue = (int)Enum.ToObject(data.Item1, data.Item2);
+            }
+            else
+            {
+                data.Item4.FindPropertyRelative("m_StringArgument").stringValue = Enum.ToObject(data.Item1, data.Item2).ToString();
+            }
+
+            data.Item5.stringValue = $"{data.Item1.Name}.{data.Item2}";
+            data.Item6.stringValue = data.Item1.Assembly.FullName;
+
+            data.Item4.serializedObject.ApplyModifiedProperties();
+            data.Item5.serializedObject.ApplyModifiedProperties();
         }
 
         private void LimitByEnum(SerializedProperty limitByEnum, bool value)
