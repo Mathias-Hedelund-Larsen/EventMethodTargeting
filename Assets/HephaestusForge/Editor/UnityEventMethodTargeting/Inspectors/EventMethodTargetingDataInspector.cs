@@ -29,67 +29,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 var sceneGuid = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_sceneGuid").stringValue;
                 var objectID = methodTargetingDataArray.GetArrayElementAtIndex(i).FindPropertyRelative("_objectID").intValue;
 
-                if (sceneGuid == "None")
-                {
-                    Object obj = UnityEditorObjectExtensions.GetObjectByInstanceID(objectID, sceneGuid);
+                Object obj = UnityEditorObjectExtensions.GetObjectByInstanceID(objectID, sceneGuid);
 
-                    if (!obj)
-                    {
-                        indexesToClear.Add(i);
-                    }
-                    else
-                    {
-                        _references.Add(obj);
-                    }
+                if (!obj)
+                {
+                    indexesToClear.Add(i);
                 }
                 else
                 {
-                    var scenePath = AssetDatabase.GUIDToAssetPath(sceneGuid);
-                    List<Scene> openScenes = new List<Scene>();
-
-                    for (int sceneIndex = 0; sceneIndex < EditorSceneManager.sceneCount; sceneIndex++)
-                    {
-                        openScenes.Add(EditorSceneManager.GetSceneAt(sceneIndex));
-                    }
-
-                    if (openScenes.Any(s => s.path == scenePath))
-                    {
-                        var rootObjects = openScenes.Find(s => s.path == scenePath).GetRootGameObjects();
-
-                        bool exists = false;
-
-                        for (int t = 0; t < rootObjects.Length; t++)
-                        {
-                            var components = rootObjects[t].GetComponents<MonoBehaviour>().ToList();
-
-                            components.AddRange(rootObjects[t].GetComponentsInChildren<MonoBehaviour>());
-
-                            for (int x = 0; x < components.Count; x++)
-                            {
-                                int localId = components[x].GetLocalID();
-
-                                if (objectID == localId)
-                                {
-                                    exists = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!exists)
-                        {
-                            indexesToClear.Add(i);
-                        }
-                    }
-                    else
-                    {
-                        var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
-
-                        if (!sceneAsset)
-                        {
-                            indexesToClear.Add(i);
-                        }
-                    }
+                    _references.Add(obj);
                 }
             }
 
@@ -108,7 +56,18 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            GUI.enabled = false;
+            EditorGUILayout.ObjectField("Script", _script, typeof(MonoScript), false);
+            EditorGUILayout.LabelField("MethodTargetingData");
+            EditorGUI.indentLevel += 1;
+            EditorGUILayout.IntField("Size", _references.Count);
+
+            for (int i = 0; i < _references.Count; i++)
+            {
+                EditorGUILayout.ObjectField("Reference", _references[i], typeof(Object), false);
+            }
+
+            GUI.enabled = true;
         }
     }
 }
