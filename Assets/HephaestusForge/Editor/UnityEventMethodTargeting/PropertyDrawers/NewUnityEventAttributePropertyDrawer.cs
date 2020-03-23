@@ -54,6 +54,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.width = rect.width / 3 - 5;
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
+
+            rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+
+            EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
