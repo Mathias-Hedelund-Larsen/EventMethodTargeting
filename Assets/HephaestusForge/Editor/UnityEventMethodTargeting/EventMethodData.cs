@@ -16,13 +16,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private bool _limitByEnum;
 
         [SerializeField]
-        private string _enumType;
+        private string _enumTypeValue;
 
         [SerializeField]
-        private UnityEngine.Object _targetOfEvent;
-
-        [SerializeField]
-        private string _methodName;
+        private string _enumAssembly;
 
         [SerializeField]
         private string _propertyPath;

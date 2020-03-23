@@ -17,8 +17,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private string _propertyPath;
         private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
-        private static List<Type> _availableEnums;
         private static SerializedObject _eventMethod;
+        private static Dictionary<Type, Enum[]> _availableEnums;
 
         private ReorderableList Init(SerializedProperty property)
         {            
@@ -37,7 +37,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             
             if(_availableEnums == null)
             {
-                _availableEnums = new List<Type>();
+                _availableEnums = new Dictionary<Type, Enum[]>();
                 GetEnumsInAssemblies();
             }
 
@@ -79,7 +79,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     if (assemblyClasses[t].IsEnum)
                     {
-                        _availableEnums.Add(assemblyClasses[t]);
+                        _availableEnums.Add(assemblyClasses[t], (Enum[])Enum.GetValues(assemblyClasses[t]));                        
                     }
                 }
             }
@@ -169,7 +169,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue == _propertyPath;
             }, out int index);
 
-            if(eventMethodData == arrayProperty)
+            if(index == -1)
             {
                 var data = _eventMethod.FindProperty("_methodTargetingData");
                 data.arraySize++;
@@ -187,7 +187,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
             {
-
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Unlimited"), !limitByEnum.boolValue, () => LimitByEnum(limitByEnum, false));
                 menu.AddItem(new GUIContent("Enum limit"), limitByEnum.boolValue, () => LimitByEnum(limitByEnum, true));
@@ -195,15 +194,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 menu.ShowAsContext();
             }
 
+            rect.x += 20;
+            rect.width = width - 20;
+
             if (limitByEnum.boolValue)
             {
-
+                DrawEnumPropertyField(rect, eventMethodData, argumentsProperty, mode);
             }
             else
             {
-                rect.x += 20;
-                rect.width = width - 20;
-
                 if(mode == PersistentListenerMode.Int)
                 {
                     EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
@@ -212,6 +211,23 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
                 }
+            }
+        }
+
+        private void DrawEnumPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        {
+            var enumTypeValueProperty = eventMethodData.FindPropertyRelative("_enumTypeValue");
+            var enumAssemblyProperty = eventMethodData.FindPropertyRelative("_enumAssembly");
+
+            if (string.IsNullOrEmpty(enumTypeValueProperty.stringValue) && string.IsNullOrEmpty(enumAssemblyProperty.stringValue))
+            {
+                var enumType = _availableEnums.Keys.ToArray()[0];
+                enumTypeValueProperty.stringValue = $"{enumType.FullName}.{_availableEnums[enumType][0]}";
+                enumAssemblyProperty.stringValue = enumType.Assembly.FullName;
+            }
+
+            if (EditorGUI.DropdownButton(rect, new GUIContent(enumTypeValueProperty.stringValue), FocusType.Keyboard))
+            {
             }
         }
 
