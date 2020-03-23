@@ -75,23 +75,46 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
 
-            List<MethodInfo> methodNames = new List<MethodInfo>() { MethodInfo.NoTarget()};
+            List<Type> acceptedParameterTypes = new List<Type>();
+            
+            acceptedParameterTypes.Add(typeof(int));
+            acceptedParameterTypes.Add(typeof(float));
+            acceptedParameterTypes.Add(typeof(bool));
+            acceptedParameterTypes.Add(typeof(string));
+            acceptedParameterTypes.Add(typeof(UnityEngine.Object));
+
+            List<MethodInfo> dynamicMethods = new List<MethodInfo>();
+
+            List<MethodInfo> persistentMethods = new List<MethodInfo>() { MethodInfo.NoTarget()};
 
             if (targetProperty.objectReferenceValue)
             {
-                if (targetProperty.objectReferenceValue is ScriptableObject)
+                if (targetProperty.objectReferenceValue is ScriptableObject || targetProperty.objectReferenceValue is Component)
                 {
                     var methods = targetProperty.objectReferenceValue.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).
                         Where(m => m.ReturnType == typeof(void)).ToArray();
 
                     if (methods.Length > 0)
                     {
-                        methodNames.Clear();
+                        persistentMethods.Clear();
 
                         for (int i = 0; i < methods.Length; i++)
                         {
-                            methodNames.Add(new MethodInfo(targetProperty.objectReferenceValue, "", $"{targetProperty.objectReferenceValue.name}.{methods[i].Name}",
-                                methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                            var parameters = methods[i].GetParameters();
+
+                            if (DoesTakeParameter(out int amount))
+                            {
+                                if(parameters.Length == amount)
+                                {
+
+                                }
+                            }
+
+                            if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
+                            {
+                                persistentMethods.Add(new MethodInfo(targetProperty.objectReferenceValue, $"{targetProperty.objectReferenceValue.GetType().ToString()}",
+                                    $"{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                            }
                         }
                     }
                 }
@@ -106,12 +129,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                         if (methods.Length > 0)
                         {
-                            methodNames.Clear();
+                            persistentMethods.Clear();
 
                             for (int i = 0; i < methods.Length; i++)
                             {
-                                methodNames.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(), 
-                                    $"{components[componentIndex].GetType().ToString()}.{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                                if (methods[i].GetParameters().Length == 0)
+                                {
+                                    persistentMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
+                                    $"{methods[i].Name}", methods[i].GetParameters().Select(p => p.ParameterType).ToArray()));
+                                }
                             }
                         }
                     }
@@ -121,31 +147,42 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += rect.width + 5;
             rect.width *= 2;
 
-            var methodInfo = methodNames.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName == methodNameProperty.stringValue);
-            int methodNameIndex = 0;
+            var methodInfo = persistentMethods.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName == methodNameProperty.stringValue);
 
-            if (methodInfo)
+            if (!methodInfo)
             {
-                methodNameIndex = methodNames.IndexOf(methodInfo);
-            }
+                methodInfo = persistentMethods[0];
+            }            
 
             GenericMenu dropDownMenu = new GenericMenu();
 
-            for (int i = 0; i < methodNames.Count; i++)
+            for (int i = 0; i < persistentMethods.Count; i++)
             {
-                dropDownMenu.AddItem(new GUIContent($"{methodNames[i].ClassName}/{methodNames[i].MethodName}"), false, ChoseMethod, methodNames[i]);
+                var instance = persistentMethods[i];
+                instance.TargetProperty = targetProperty;
+                instance.MethodNameProperty = methodNameProperty;
+                instance.ListenerModeProperty = listenerModeProperty;
+                dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
             }
+
+            GUI.enabled = methodInfo.MethodName != "No target";
 
             if (EditorGUI.DropdownButton(rect, new GUIContent(methodInfo.MethodName), FocusType.Keyboard))
             {
                 dropDownMenu.ShowAsContext();
             }
-            //methodNameProperty.stringValue = methodNames[EditorGUI.Popup(rect, methodNameIndex, methodNames.Select(m => m.MethodName).ToArray())];
+
+            GUI.enabled = true;
         }
 
-        private void ChoseMethod(object methodInfo)
+        private void ChosenMethod(object methodInfo)
         {
-            throw new NotImplementedException();
+            MethodInfo info = (MethodInfo)methodInfo;
+
+            info.TargetProperty.objectReferenceValue = info.Target;
+            info.MethodNameProperty.stringValue = info.MethodName;
+
+            info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Void;
         }
 
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
@@ -203,7 +240,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private bool FieldTypeIsUnityEvent()
         {
-            if(fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) || DoesTakeParameter())
+            if(fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) || DoesTakeParameter(out int amount))
             {
                 return true;
             }
@@ -211,14 +248,30 @@ namespace HephaestusForge.UnityEventMethodTargeting
             return false;
         }
 
-        private bool DoesTakeParameter()
+        private bool DoesTakeParameter(out int parameterCount)
         {
-            if(fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
-                fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
+            if (fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)))
             {
+                parameterCount = 1;
+                return true;
+            }
+            else if (fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)))
+            {
+                parameterCount = 2;
+                return true;
+            }
+            else if (fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)))
+            {
+                parameterCount = 3;
+                return true;
+            }
+            else if(fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
+            {
+                parameterCount = 4;
                 return true;
             }
 
+            parameterCount = 0;
             return false;
         }
 
