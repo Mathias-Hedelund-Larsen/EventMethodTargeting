@@ -313,7 +313,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
         }
 
         private void OnRemoveClicked(ReorderableList list)
-        {
+        {            
+            list.serializedProperty.DeleteArrayElementAtIndex(list.index);
+            list.serializedProperty.serializedObject.ApplyModifiedProperties();
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
