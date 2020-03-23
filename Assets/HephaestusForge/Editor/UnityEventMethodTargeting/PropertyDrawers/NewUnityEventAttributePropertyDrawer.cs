@@ -58,14 +58,45 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
 
-            DrawBottomLine(rect, targetProperty, argumentsProperty);
+            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty);
         }
 
-        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty)
+        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty)
         {
             rect.width = rect.width / 3 - 5;
 
             EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
+
+            rect.x += rect.width + 5;
+            rect.width *= 2;
+
+            PersistentListenerMode mode = (PersistentListenerMode)listenerModeProperty.intValue;
+
+            EditorGUI.BeginChangeCheck();
+
+            switch (mode)
+            {
+                case PersistentListenerMode.Object:
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                    break;
+                case PersistentListenerMode.Int:
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
+                    break;
+                case PersistentListenerMode.Float:
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
+                    break;
+                case PersistentListenerMode.String:
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
+                    break;
+                case PersistentListenerMode.Bool:
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
+                    break;
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                targetProperty.serializedObject.ApplyModifiedProperties();
+            }
         }
 
         private void DrawTopLine(Rect rect, SerializedProperty targetProperty, SerializedProperty methodNameProperty, SerializedProperty callStateProperty, 
@@ -188,7 +219,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
             }
 
-            GUI.enabled = methodInfo.MethodName != "No target";
+            GUI.enabled = (persistentMethods.Count > 1 || dynamicMethods.Count > 0);
 
             if (EditorGUI.DropdownButton(rect, new GUIContent(methodInfo.MethodName), FocusType.Keyboard))
             {
@@ -263,7 +294,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private void OnAddClicked(Rect buttonRect, ReorderableList list)
         {
             list.serializedProperty.arraySize++;
-
+            list.serializedProperty.FindPropertyRelative("m_CallState").intValue = (int)UnityEventCallState.RuntimeOnly;
             list.serializedProperty.serializedObject.ApplyModifiedProperties();
         }
 
