@@ -132,13 +132,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.Int:
-                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
+                        IntOrStringDraw(rect, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Float:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.String:
-                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
+                        IntOrStringDraw(rect, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Bool:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
@@ -154,6 +154,71 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 listenerModeProperty.intValue = (int)PersistentListenerMode.Void;
             }
+        }
+
+        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        {
+            var width = rect.width;
+            rect.width = 20;
+
+            var eventMethodData = _eventMethod.FindProperty("_methodTargetingData").FindInArray((sProp) =>
+            {
+                return sProp.FindPropertyRelative("_sceneGuid").stringValue == _initialized[_propertyPath].Item2 &&
+                sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1;
+            }, out int index);
+
+            if(eventMethodData != null)
+            {
+                var data = _eventMethod.FindProperty("_methodTargetingData");
+                data.arraySize++;
+
+                eventMethodData = data.GetArrayElementAtIndex(data.arraySize - 1);
+
+                eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
+                eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
+            }
+
+            var limitByEnum = eventMethodData.FindPropertyRelative("_limitByEnum");
+
+            if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
+            {
+
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Unlimited"), !limitByEnum.boolValue, () => LimitByEnum(limitByEnum, false));
+                menu.AddItem(new GUIContent("Enum limit"), limitByEnum.boolValue, () => LimitByEnum(limitByEnum, true));
+
+                menu.ShowAsContext();
+            }
+
+            if (limitByEnum.boolValue)
+            {
+
+            }
+            else
+            {
+                rect.x += 20;
+                rect.width = width - 20;
+
+                if(mode == PersistentListenerMode.Int)
+                {
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_IntArgument"), new GUIContent(""));
+                }
+                else
+                {
+                    EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
+                }
+            }
+        }
+
+        private void LimitByEnum(SerializedProperty limitByEnum, bool value)
+        {
+            limitByEnum.boolValue = value;
+            _eventMethod.ApplyModifiedProperties();
+        }
+
+        private Texture GetTexture()
+        {
+            return (Texture)EditorGUIUtility.Load("icons/d__Popup.png");
         }
 
         private void DrawTopLine(Rect rect, SerializedProperty targetProperty, SerializedProperty methodNameProperty, SerializedProperty callStateProperty, 
