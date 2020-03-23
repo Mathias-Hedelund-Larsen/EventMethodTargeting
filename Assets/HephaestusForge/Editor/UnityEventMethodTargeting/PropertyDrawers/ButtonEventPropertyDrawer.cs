@@ -9,7 +9,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
     public class ButtonEventPropertyDrawer : PropertyDrawer
     {
-        private NewUnityEventAttributePropertyDrawer _eventMethodDrawer = new NewUnityEventAttributePropertyDrawer();
+        private EventMethodTargetAttributePropertyDrawer _eventMethodDrawer = new EventMethodTargetAttributePropertyDrawer();
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {

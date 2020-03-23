@@ -8,7 +8,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
     [CustomPropertyDrawer(typeof(Dropdown.DropdownEvent), true)]
     public class DropdownEventPropertyDrawer : PropertyDrawer
     {
-        private NewUnityEventAttributePropertyDrawer _eventMethodDrawer = new NewUnityEventAttributePropertyDrawer();
+        private EventMethodTargetAttributePropertyDrawer _eventMethodDrawer = new EventMethodTargetAttributePropertyDrawer();
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {

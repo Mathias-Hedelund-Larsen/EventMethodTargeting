@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +10,7 @@ using UnityEngine.Events;
 namespace HephaestusForge.UnityEventMethodTargeting
 {
     [CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
-    public class NewUnityEventAttributePropertyDrawer : PropertyDrawer
+    public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
     {
         private string _propertyName;
         private string _propertyPath;
@@ -396,7 +395,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 instance.TargetProperty = targetProperty;
                 instance.MethodNameProperty = methodNameProperty;
                 instance.ListenerModeProperty = listenerModeProperty;
-                dropDownMenu.AddItem(new GUIContent($"{dynamicMethods[i].ClassName}/{dynamicMethods[i].MethodName}"), false, ChosenMethod, instance);
+                dropDownMenu.AddItem(new GUIContent($"{dynamicMethods[i].ClassName}/Dynamic/{dynamicMethods[i].MethodName}"), false, ChosenMethod, instance);
             }
 
             for (int i = 0; i < persistentMethods.Count; i++)
@@ -408,7 +407,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     instance.TargetProperty = targetProperty;
                     instance.MethodNameProperty = methodNameProperty;
                     instance.ListenerModeProperty = listenerModeProperty;
-                    dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
+                    string submenu = dynamicMethods.Count > 0 ? "Persistant/" : string.Empty;
+                    dropDownMenu.AddItem(new GUIContent($"{persistentMethods[i].ClassName}/{submenu}{persistentMethods[i].MethodName}"), false, ChosenMethod, instance);
                 }
             }
 
