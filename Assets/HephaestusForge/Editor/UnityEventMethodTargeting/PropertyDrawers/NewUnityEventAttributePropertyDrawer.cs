@@ -54,14 +54,22 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.height = EditorGUIUtility.singleLineHeight;
 
-            DrawTopLine(rect, targetProperty, methodNameProperty, callStateProperty);            
+            DrawTopLine(rect, targetProperty, methodNameProperty, callStateProperty , listenerModeProperty);            
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
+
+            DrawBottomLine(rect, targetProperty, argumentsProperty);
+        }
+
+        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty)
+        {
+            rect.width = rect.width / 3 - 5;
 
             EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
         }
 
-        private void DrawTopLine(Rect rect, SerializedProperty targetProperty, SerializedProperty methodNameProperty, SerializedProperty callStateProperty)
+        private void DrawTopLine(Rect rect, SerializedProperty targetProperty, SerializedProperty methodNameProperty, SerializedProperty callStateProperty, 
+            SerializedProperty listenerModeProperty)
         {
             rect.width = rect.width / 3 - 5;
 
@@ -173,9 +181,18 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private bool FieldTypeIsUnityEvent()
         {
-            if(fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
-                    fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
+            if(fieldInfo.FieldType == typeof(UnityEvent) || fieldInfo.FieldType.IsSubclassOf(typeof(UnityEvent)) || DoesTakeParameter())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool DoesTakeParameter()
+        {
+            if(fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,>)) ||
+                fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,>)) || fieldInfo.FieldType.IsSubclassOfRawGeneric(typeof(UnityEvent<,,,>)))
             {
                 return true;
             }
