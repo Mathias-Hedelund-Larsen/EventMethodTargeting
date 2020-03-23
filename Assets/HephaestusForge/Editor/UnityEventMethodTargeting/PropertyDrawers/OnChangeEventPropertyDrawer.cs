@@ -10,7 +10,7 @@ namespace HephaestusForge
         [CustomPropertyDrawer(typeof(InputField.OnChangeEvent), true)]
         public class OnChangeEventPropertyDrawer : PropertyDrawer
         {
-            private EventMethodTargetAttributePropertyDrawer _eventMethodDrawer = new EventMethodTargetAttributePropertyDrawer();
+            private NewUnityEventAttributePropertyDrawer _eventMethodDrawer = new NewUnityEventAttributePropertyDrawer();
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {

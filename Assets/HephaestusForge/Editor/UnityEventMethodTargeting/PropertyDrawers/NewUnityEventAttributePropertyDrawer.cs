@@ -17,6 +17,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private string _propertyPath;
         private Dictionary<string, ReorderableList> _initialized = new Dictionary<string, ReorderableList>();
 
+        private static List<Type> AvailableEnums;
+
         private ReorderableList Init(SerializedProperty property)
         {            
             Selection.selectionChanged -= OnLostInspectorFocus;
@@ -30,9 +32,50 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
-            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;            
+            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;  
+            
+            if(AvailableEnums == null)
+            {
+                AvailableEnums = new List<Type>();
+                GetEnumsInAssemblies();
+            }
 
             return list;
+        }
+
+        private void GetEnumsInAssemblies()
+        {
+            var assemblyDefinitions = AssetDatabase.FindAssets("t:asmdef");
+            List<UnityEngine.Object> assemblyObjects = new List<UnityEngine.Object>();
+
+            for (int i = 0; i < assemblyDefinitions.Length; i++)
+            {
+                assemblyObjects.Add(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GUIDToAssetPath(assemblyDefinitions[i])));
+            }
+
+            for (int i = assemblyObjects.Count - 1; i >= 0; i--)
+            {
+                if (assemblyObjects[i].name.Contains("Editor") || assemblyObjects[i].name.Contains("Tests") || assemblyObjects[i].name.Contains("Analytics"))
+                {
+                    assemblyObjects.RemoveAt(i);
+                }
+            }
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.FullName.Contains("Assembly-CSharp") && !a.FullName.Contains("Editor") ||
+                assemblyObjects.Any(ao => ao.name.Contains(a.FullName)) || a.FullName.Split('.')[0].Contains("System")).ToArray();
+
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                var assemblyClasses = assemblies[i].GetTypes();
+
+                for (int t = 0; t < assemblyClasses.Length; t++)
+                {
+                    if (assemblyClasses[t].IsEnum)
+                    {
+                        AvailableEnums.Add(assemblyClasses[t]);
+                    }
+                }
+            }
         }
 
         private void DrawHeader(Rect rect)
