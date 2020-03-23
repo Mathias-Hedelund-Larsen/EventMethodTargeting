@@ -12,10 +12,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
     [CustomEditor(typeof(EventMethodDataHandler))]
     public class EventMethodTargetingDataInspector : Editor
     {
+        private MonoScript _script;
         private SerializedObject _target;
+        private List<Object> _references = new List<Object>();
 
         private void OnEnable()
         {
+            _script = target.GetScript();
             _target = new SerializedObject(target);
 
             var methodTargetingDataArray = _target.FindProperty("_methodTargetingData");
@@ -28,11 +31,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 if (sceneGuid == "None")
                 {
-                    Object obj = UnityEditorObjectExtensions.GetObjectByInstanceID(objectID);
+                    Object obj = UnityEditorObjectExtensions.GetObjectByInstanceID(objectID, sceneGuid);
 
                     if (!obj)
                     {
                         indexesToClear.Add(i);
+                    }
+                    else
+                    {
+                        _references.Add(obj);
                     }
                 }
                 else
