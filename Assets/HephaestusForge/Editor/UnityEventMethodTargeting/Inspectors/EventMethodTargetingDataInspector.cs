@@ -17,11 +17,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private void OnEnable()
         {
             _target = new SerializedObject(target);
-        }
-
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
 
             var methodTargetingDataArray = _target.FindProperty("_methodTargetingData");
             List<int> indexesToClear = new List<int>();
@@ -64,7 +59,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                             for (int x = 0; x < components.Count; x++)
                             {
-                                int localId = components[x].GetLocalID();                                
+                                int localId = components[x].GetLocalID();
 
                                 if (objectID == localId)
                                 {
@@ -102,6 +97,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 AssetDatabase.SaveAssets();
             }
+        }
+
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
         }
     }
 }
