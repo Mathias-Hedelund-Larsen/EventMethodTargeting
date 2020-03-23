@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
@@ -29,7 +30,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
-            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing;            
+            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 3;            
 
             return list;
         }
@@ -55,7 +56,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             DrawTopLine(rect, targetProperty, methodNameProperty, callStateProperty);            
 
-            rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
 
             EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
         }
@@ -72,7 +73,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 if (targetProperty.objectReferenceValue is ScriptableObject)
                 {
-                    var methods = targetProperty.objectReferenceValue.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    var methods = targetProperty.objectReferenceValue.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).
+                        Where(m => m.ReturnType == typeof(void)).ToArray();
 
                     if (methods.Length > 0)
                     {
@@ -90,7 +92,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                     for (int componentIndex = 0; componentIndex < components.Length; componentIndex++)
                     {
-                        var methods = components[componentIndex].GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        var methods = components[componentIndex].GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).
+                            Where(m => m.ReturnType == typeof(void)).ToArray();
 
                         if (methods.Length > 0)
                         {
@@ -146,7 +149,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 count = count < 0 ? 0 : count;
 
-                propertyHeight += count * (EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing);
+                propertyHeight += count * (EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5);
             }
 
             return propertyHeight;
