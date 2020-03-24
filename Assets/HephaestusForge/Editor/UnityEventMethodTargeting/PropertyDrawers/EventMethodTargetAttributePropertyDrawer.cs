@@ -331,9 +331,15 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
                             | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
 
-                        argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue =
-                               EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue,
-                               methodParameterType, !target.objectReferenceValue.IsAsset());
+                        var targetObj = EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue,
+                                methodParameterType, !target.objectReferenceValue.IsAsset());
+
+                        argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = targetObj;
+
+                        if (targetObj)
+                        {
+                            argumentsProperty.FindPropertyRelative("m_ObjectArgumentAssemblyTypeName").stringValue = targetObj.GetType().AssemblyQualifiedName;
+                        }
 
                         break;
 
@@ -930,20 +936,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             parameterCount = 0;
             return false;
-        }
-
-        private void GetSubStringsBetweenChars(string origin, char start, char end, out string[] fullMatch, out string[] insideEncapsulation)
-        {
-            var matches = Regex.Matches(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
-            fullMatch = new string[matches.Count];
-            insideEncapsulation = new string[matches.Count];
-
-            for (int i = 0; i < matches.Count; i++)
-            {
-                fullMatch[i] = matches[i].Groups[0].Value;
-
-                insideEncapsulation[i] = matches[i].Groups[1].Value;
-            }
         }
 
         private void OnLostInspectorFocus()
