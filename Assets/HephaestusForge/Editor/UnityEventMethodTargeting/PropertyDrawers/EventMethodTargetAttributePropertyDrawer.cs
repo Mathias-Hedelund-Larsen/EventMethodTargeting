@@ -72,25 +72,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
                 else if (index == newIndex)
                 {
-                    if (oldIndex > index)
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
-                    }
-                    else
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{oldIndex}]"), _initializedGuid[keys[i]]);
-                    }
-                }
-                else if (index > newIndex)
-                { 
-                    if(oldIndex > index)
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
-                    }
-                    else
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index}]"), _initializedGuid[keys[i]]);
-                    }
+                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{oldIndex}]"), _initializedGuid[keys[i]]);
                 }
                 else
                 {
