@@ -39,17 +39,17 @@ MonoBehaviour:
     _guid: 44b040ad-4194-4a26-8e88-e0ec61c1e0d6
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 2
-    _limiter: {fileID: 0}
-    _enumTypeValue: Tag.MainCamera
+    _limit: 1
+    _limiter: {fileID: 11400000, guid: fd14389bdb6f63b4da7c4b5bac7843e5, type: 2}
+    _enumTypeValue: Test
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
     _guid: 02db4047-a14d-4a98-8908-22d88021e256
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
-    _limiter: {fileID: 0}
-    _enumTypeValue: Tag.MainCamera
+    _limiter: {fileID: 11400000, guid: 9147ebbec853e594aad8c8987d48d44b, type: 2}
+    _enumTypeValue: AutoGit
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
     _guid: 38b999c7-b53a-417d-8f59-07f6f52ffb0b

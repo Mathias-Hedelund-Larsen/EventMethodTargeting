@@ -1324,13 +1324,24 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2142777328}
-        m_MethodName: TakeString
-        m_Mode: 5
+        m_MethodName: TakeFloat
+        m_Mode: 4
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 3
-          m_FloatArgument: 0
+          m_FloatArgument: 66.57
+          m_StringArgument: MainCamera
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 2142777328}
+        m_MethodName: TakeObject
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 2142777327}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 3
+          m_FloatArgument: 66.57
           m_StringArgument: MainCamera
           m_BoolArgument: 0
         m_CallState: 2
@@ -2670,7 +2681,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _event:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2142777328}
+        m_MethodName: TakeObject
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.ScriptableObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &2142777329
 Transform:
   m_ObjectHideFlags: 0

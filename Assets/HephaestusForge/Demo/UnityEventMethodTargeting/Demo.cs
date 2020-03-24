@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 public class Demo : MonoBehaviour
 {
-    [SerializeField, EventMethodTarget]
+    [SerializeField]
     private UnityEvent _event;
 
     private void TakeInt(int val)
@@ -29,5 +29,10 @@ public class Demo : MonoBehaviour
     private void TakeBool(bool val) 
     {
         Debug.Log(val);
+    }
+
+    public void TakeObject(ScriptableObject obj)
+    {
+        Debug.Log(obj);
     }
 }

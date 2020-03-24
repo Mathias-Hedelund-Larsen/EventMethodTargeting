@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53b058c37876fc04f803fc6da94b921a, type: 3}
+  m_Name: ObjectLimiter
+  m_EditorClassIdentifier: 
+  _fields:
+  - _fieldName: AutoGit
+    _fieldValue: {fileID: 11400000, guid: d2bc598d1c999e7429066dd665692c29, type: 2}
