@@ -18,12 +18,12 @@ MonoBehaviour:
     _limitByEnum: 0
     _enumTypeValue: 
     _enumAssembly: 
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: 8651fa60-52d1-4139-9277-c002d6ac42b9
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
+    _guid: fa4241da-ffae-4290-8b97-8ee09575718d
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 0
     _enumTypeValue: 
     _enumAssembly: 
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
-    _guid: 82d7b8ae-3ff1-4709-94f4-502090e69f44
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2]
+    _guid: 6a9130db-ee83-4bdc-b17c-c63e5c5bd80e
