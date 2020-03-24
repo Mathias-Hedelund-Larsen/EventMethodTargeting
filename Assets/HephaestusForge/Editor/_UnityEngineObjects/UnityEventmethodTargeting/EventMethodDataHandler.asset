@@ -15,49 +15,25 @@ MonoBehaviour:
   _methodTargetingData:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 0
-    _limiter: {fileID: 0}
-    _enumTypeValue: KeyCode.None
-    _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: 99f36609-26bd-4b82-99c5-a5ba91ba57b4
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 914422272
-    _limit: 0
-    _limiter: {fileID: 0}
-    _enumTypeValue: Layer.PostProcessing
-    _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: 75c9a6a7-350d-4694-bb4d-d239dac56cd1
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 914422272
-    _limit: 0
-    _limiter: {fileID: 0}
-    _enumTypeValue: Layer.PostProcessing
-    _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2]
-    _guid: 44b040ad-4194-4a26-8e88-e0ec61c1e0d6
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 914422272
     _limit: 1
     _limiter: {fileID: 11400000, guid: fd14389bdb6f63b4da7c4b5bac7843e5, type: 2}
     _enumTypeValue: Test
+    _enumAssembly: 
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
+    _guid: 94c2e5aa-8255-46f2-8adb-8fef585dd760
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 914422272
+    _limit: 1
+    _limiter: {fileID: 11400000, guid: 9147ebbec853e594aad8c8987d48d44b, type: 2}
+    _enumTypeValue: Button.PrefabButton[0]
+    _enumAssembly: 
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
+    _guid: 98d774d0-6716-4c19-87a1-259abfac8603
+  - _sceneGuid: None
+    _objectID: 15908
+    _limit: 2
+    _limiter: {fileID: 0}
+    _enumTypeValue: Tag.Untagged
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: 02db4047-a14d-4a98-8908-22d88021e256
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 914422272
-    _limit: 1
-    _limiter: {fileID: 0}
-    _enumTypeValue: No target.
-    _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
-    _guid: 38b999c7-b53a-417d-8f59-07f6f52ffb0b
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 914422272
-    _limit: 1
-    _limiter: {fileID: 11400000, guid: aaa40ea897fb8354d9841a2da5c31131, type: 2}
-    _enumTypeValue: Hello
-    _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3]
-    _guid: 1626b35e-2136-46fb-bd8e-e1642fe871c5
+    _guid: e1f85f6b-4d0f-462f-86b6-000963164aa5

@@ -1338,7 +1338,8 @@ MonoBehaviour:
         m_MethodName: TakeObject
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 914422272}
+          m_ObjectArgument: {fileID: 2907893418270366001, guid: eeb93df010eaa004490421b91f84f2f1,
+            type: 3}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.UI.Button, UnityEngine.UI
           m_IntArgument: 3
           m_FloatArgument: 66.57
