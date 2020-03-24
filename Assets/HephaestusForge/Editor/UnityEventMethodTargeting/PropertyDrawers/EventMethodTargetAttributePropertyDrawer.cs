@@ -18,6 +18,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private string _propertyPath;
         private string _callPropertyPath;
         private Dictionary<string, string> _initializedGuid = new Dictionary<string, string>();
+        private Dictionary<string, ScriptableObject[]> _limiters = new Dictionary<string, ScriptableObject[]>();
         private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
         private static SerializedObject _eventMethod;
@@ -114,6 +115,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var persistantCallProperty = _initialized[_propertyPath].Item3.serializedProperty.GetArrayElementAtIndex(index);
             _callPropertyPath = persistantCallProperty.propertyPath;
 
+            if (!_limiters.ContainsKey(_callPropertyPath))
+            {
+                _limiters.Add(_callPropertyPath, new ScriptableObject[0]);
+            }
+
             if (!_initializedGuid.ContainsKey(_callPropertyPath))
             {
                 var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
@@ -193,7 +199,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 switch (mode)
                 {
-                    case PersistentListenerMode.Object:
+                    case PersistentListenerMode.Object:                        
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.Int:
@@ -221,6 +227,36 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
+        private void DrawChoseLimit(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        {
+            if (_limiters[_callPropertyPath].Length == 0)
+            {
+                switch (mode)
+                {
+                    case PersistentListenerMode.Object:
+                        var objectLimiters = AssetDatabase.FindAssets("t:ObjectLimiter");
+
+                        _limiters[_callPropertyPath] = new ScriptableObject[objectLimiters.Length];
+
+                        for (int i = 0; i < objectLimiters.Length; i++)
+                        {
+                            _limiters[_callPropertyPath][i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(objectLimiters[i]));
+                        }
+                        break;
+                    case PersistentListenerMode.Float:
+                        var floatLimiters = AssetDatabase.FindAssets("t:ObjectLimiter");
+
+                        _limiters[_callPropertyPath] = new ScriptableObject[floatLimiters.Length];
+
+                        for (int i = 0; i < floatLimiters.Length; i++)
+                        {
+                            _limiters[_callPropertyPath][i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(floatLimiters[i]));
+                        }
+                        break;
+                }
+            }
+        }
+
         private void IntOrStringDraw(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
         {
             var width = rect.width;
@@ -228,28 +264,29 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             var _limit = eventMethodData.FindPropertyRelative("_limit");
 
-            ScriptableObject[] limiters = new ScriptableObject[0];
-
-            if (mode == PersistentListenerMode.Int)
+            if (_limiters[_callPropertyPath].Length == 0)
             {
-                var intLimiters = AssetDatabase.FindAssets("t:IntLimiter");
-
-                limiters = new ScriptableObject[intLimiters.Length];
-
-                for (int i = 0; i < intLimiters.Length; i++)
+                if (mode == PersistentListenerMode.Int)
                 {
-                    limiters[i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(intLimiters[i]));
+                    var intLimiters = AssetDatabase.FindAssets("t:IntLimiter");
+
+                    _limiters[_callPropertyPath] = new ScriptableObject[intLimiters.Length];
+
+                    for (int i = 0; i < intLimiters.Length; i++)
+                    {
+                        _limiters[_callPropertyPath][i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(intLimiters[i]));
+                    }
                 }
-            }
-            else
-            {
-                var stringLimiters = AssetDatabase.FindAssets("t:StringLimiter");
-
-                limiters = new ScriptableObject[stringLimiters.Length];
-
-                for (int i = 0; i < stringLimiters.Length; i++)
+                else
                 {
-                    limiters[i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(stringLimiters[i]));
+                    var stringLimiters = AssetDatabase.FindAssets("t:StringLimiter");
+
+                    _limiters[_callPropertyPath] = new ScriptableObject[stringLimiters.Length];
+
+                    for (int i = 0; i < stringLimiters.Length; i++)
+                    {
+                        _limiters[_callPropertyPath][i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(stringLimiters[i]));
+                    }
                 }
             }
 
@@ -259,7 +296,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 menu.AddItem(new GUIContent("Unlimited"), _limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(_limit, UnityEventValueLimit.Unlimited));
                 menu.AddItem(new GUIContent("Enum limit"), _limit.intValue == (int)UnityEventValueLimit.Enum, () => SetLimitation(_limit, UnityEventValueLimit.Enum));
 
-                if (limiters.Length > 0)
+                if (_limiters[_callPropertyPath].Length > 0)
                 {
                     menu.AddItem(new GUIContent("Array limit"), _limit.intValue == (int)UnityEventValueLimit.Array, () => SetLimitation(_limit, UnityEventValueLimit.Array));
                 }
@@ -276,11 +313,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
             else if((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Array)
             {
-                SerializedProperty[] fieldsProperty = new SerializedProperty[limiters.Length];
+                SerializedProperty[] fieldsProperty = new SerializedProperty[_limiters[_callPropertyPath].Length];
 
-                for (int i = 0; i < limiters.Length; i++)
+                for (int i = 0; i < _limiters[_callPropertyPath].Length; i++)
                 {
-                    fieldsProperty[i] = new SerializedObject(limiters[i]).FindProperty("_fields");
+                    fieldsProperty[i] = new SerializedObject(_limiters[_callPropertyPath][i]).FindProperty("_fields");
                 }
 
                 DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, fieldsProperty);
