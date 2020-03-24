@@ -37,10 +37,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
                 else
                 {
-                    if(obj is SceneAsset)
-                    {
-
-                    }
                     _references.Add(obj);
                 }
             }
