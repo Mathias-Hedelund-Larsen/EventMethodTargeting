@@ -301,7 +301,19 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private void DrawArrayLimiterPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode,
             SerializedProperty[] limits)
         {
+            var limiterProperty = eventMethodData.FindPropertyRelative("_limiter");
 
+            if (limiterProperty.objectReferenceValue)
+            {
+                if(!limits.Any(l => l.serializedObject.targetObject == limiterProperty.objectReferenceValue))
+                {
+                    limiterProperty.objectReferenceValue = null;
+                }
+                else
+                {
+
+                }
+            }
         }
 
         private void DrawEnumPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
