@@ -25,3 +25,9 @@ MonoBehaviour:
     _enumTypeValue: Layer.UI
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[0]
+  - _sceneGuid: None
+    _objectID: 11832
+    _limitByEnum: 1
+    _enumTypeValue: Layer.UI
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.Array[0]
