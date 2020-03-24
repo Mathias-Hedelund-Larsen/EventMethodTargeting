@@ -15,3 +15,6 @@ MonoBehaviour:
   _fields:
   - _fieldName: AutoGit
     _fieldValue: {fileID: 11400000, guid: d2bc598d1c999e7429066dd665692c29, type: 2}
+  - _fieldName: Button
+    _fieldValue: {fileID: 2907893418270366015, guid: eeb93df010eaa004490421b91f84f2f1,
+      type: 3}

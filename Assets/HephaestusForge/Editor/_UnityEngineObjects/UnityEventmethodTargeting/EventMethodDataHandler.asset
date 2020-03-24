@@ -47,7 +47,7 @@ MonoBehaviour:
     _guid: 02db4047-a14d-4a98-8908-22d88021e256
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 0
+    _limit: 1
     _limiter: {fileID: 0}
     _enumTypeValue: No target.
     _enumAssembly: UnityEngine

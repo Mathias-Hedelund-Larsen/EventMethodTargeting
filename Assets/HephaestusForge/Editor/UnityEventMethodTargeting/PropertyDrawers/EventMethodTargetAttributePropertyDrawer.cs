@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -285,7 +284,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         fieldsProperty[i] = new SerializedObject(_limiters[_callPropertyPath][i]).FindProperty("_fields");
                     }
 
-                    DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, fieldsProperty);
+                    DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, fieldsProperty, target, methodName);
                 }
                 else
                 {
@@ -435,7 +434,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         }
 
         private void DrawArrayLimiterPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode,
-            SerializedProperty[] limits)
+            SerializedProperty[] limits, SerializedProperty target = null, SerializedProperty methodName = null)
         {
             var limiterProperty = eventMethodData.FindPropertyRelative("_limiter");
 
@@ -456,8 +455,22 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     var limitations = limits[i].GetArrayElementAtIndex(t);
 
-                    limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
-                        limitations.FindPropertyRelative("_fieldValue").GetCurrentValue(), limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                    if (mode != PersistentListenerMode.Object)
+                    {
+                        limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
+                            limitations.FindPropertyRelative("_fieldValue").GetCurrentValue(), limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                    }
+                    else
+                    {
+                        object currentVal = limitations.FindPropertyRelative("_fieldValue").GetCurrentValue();
+
+                        if (currentVal.GetType() == target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
+                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType)
+                        {
+                            limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
+                                currentVal, limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                        }
+                    }
                 }
             }
 
