@@ -199,14 +199,14 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 switch (mode)
                 {
-                    case PersistentListenerMode.Object:                        
-                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                    case PersistentListenerMode.Object:
+                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Int:
                         IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Float:
-                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
+                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.String:
                         IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
@@ -244,7 +244,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         }
                         break;
                     case PersistentListenerMode.Float:
-                        var floatLimiters = AssetDatabase.FindAssets("t:ObjectLimiter");
+                        var floatLimiters = AssetDatabase.FindAssets("t:FloatLimiter");
 
                         _limiters[_callPropertyPath] = new ScriptableObject[floatLimiters.Length];
 
@@ -255,6 +255,78 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         break;
                 }
             }
+
+            if(_limiters[_callPropertyPath].Length > 0)
+            {
+                var width = rect.width;
+                rect.width = 20;
+
+                var limit = eventMethodData.FindPropertyRelative("_limit");
+
+                if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
+                {
+                    GenericMenu menu = new GenericMenu();
+                    menu.AddItem(new GUIContent("Unlimited"), limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(limit, UnityEventValueLimit.Unlimited));
+                    menu.AddItem(new GUIContent("Array limit"), limit.intValue == (int)UnityEventValueLimit.Array, () => SetLimitation(limit, UnityEventValueLimit.Array));
+
+                    menu.ShowAsContext();
+                }
+
+                rect.x += 20;
+                rect.width = width - 20;
+
+                if (limit.intValue == (int)UnityEventValueLimit.Array)
+                {
+                    SerializedProperty[] fieldsProperty = new SerializedProperty[_limiters[_callPropertyPath].Length];
+
+                    for (int i = 0; i < _limiters[_callPropertyPath].Length; i++)
+                    {
+                        fieldsProperty[i] = new SerializedObject(_limiters[_callPropertyPath][i]).FindProperty("_fields");
+                    }
+
+                    DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, fieldsProperty);
+                }
+                else
+                {
+                    EditorGUI.BeginChangeCheck();
+
+                    switch (mode)
+                    {
+                        case PersistentListenerMode.Object:
+                            EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                            break;
+
+                        case PersistentListenerMode.Float:
+                            EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
+                            break;
+                    }
+
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        argumentsProperty.serializedObject.ApplyModifiedProperties();
+                    }
+                }
+            }
+            else
+            {
+                EditorGUI.BeginChangeCheck();
+
+                switch (mode)
+                {
+                    case PersistentListenerMode.Object:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                        break;
+
+                    case PersistentListenerMode.Float:
+                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
+                        break;
+                }
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    argumentsProperty.serializedObject.ApplyModifiedProperties();
+                }
+            }
         }
 
         private void IntOrStringDraw(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
@@ -262,7 +334,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var width = rect.width;
             rect.width = 20;            
 
-            var _limit = eventMethodData.FindPropertyRelative("_limit");
+            var limit = eventMethodData.FindPropertyRelative("_limit");
 
             if (_limiters[_callPropertyPath].Length == 0)
             {
@@ -293,12 +365,12 @@ namespace HephaestusForge.UnityEventMethodTargeting
             if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Unlimited"), _limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(_limit, UnityEventValueLimit.Unlimited));
-                menu.AddItem(new GUIContent("Enum limit"), _limit.intValue == (int)UnityEventValueLimit.Enum, () => SetLimitation(_limit, UnityEventValueLimit.Enum));
+                menu.AddItem(new GUIContent("Unlimited"), limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(limit, UnityEventValueLimit.Unlimited));
+                menu.AddItem(new GUIContent("Enum limit"), limit.intValue == (int)UnityEventValueLimit.Enum, () => SetLimitation(limit, UnityEventValueLimit.Enum));
 
                 if (_limiters[_callPropertyPath].Length > 0)
                 {
-                    menu.AddItem(new GUIContent("Array limit"), _limit.intValue == (int)UnityEventValueLimit.Array, () => SetLimitation(_limit, UnityEventValueLimit.Array));
+                    menu.AddItem(new GUIContent("Array limit"), limit.intValue == (int)UnityEventValueLimit.Array, () => SetLimitation(limit, UnityEventValueLimit.Array));
                 }
 
                 menu.ShowAsContext();
@@ -307,11 +379,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += 20;
             rect.width = width - 20;
 
-            if ((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Enum)
+            if ((UnityEventValueLimit)limit.intValue == UnityEventValueLimit.Enum)
             {
                 DrawEnumPropertyField(rect, eventMethodData, argumentsProperty, mode);
             }
-            else if((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Array)
+            else if((UnityEventValueLimit)limit.intValue == UnityEventValueLimit.Array)
             {
                 SerializedProperty[] fieldsProperty = new SerializedProperty[_limiters[_callPropertyPath].Length];
 
@@ -697,6 +769,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private void ChosenMethod(object methodInfo)
         {
+            _limiters[_callPropertyPath] = new ScriptableObject[0];
+
             MethodInfo info = (MethodInfo)methodInfo;
 
             info.TargetProperty.objectReferenceValue = info.Target;
