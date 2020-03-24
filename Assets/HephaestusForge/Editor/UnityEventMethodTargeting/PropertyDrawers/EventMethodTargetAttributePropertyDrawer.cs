@@ -200,13 +200,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 switch (mode)
                 {
                     case PersistentListenerMode.Object:
-                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, mode);
+                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, targetProperty, methodName, mode);
                         break;
                     case PersistentListenerMode.Int:
                         IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Float:
-                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, mode);
+                        DrawChoseLimit(rect, eventMethodData, argumentsProperty, targetProperty, methodName, mode);
                         break;
                     case PersistentListenerMode.String:
                         IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
@@ -227,7 +227,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
-        private void DrawChoseLimit(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        private void DrawChoseLimit(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, SerializedProperty target, SerializedProperty methodName,
+            PersistentListenerMode mode)
         {
             if (_limiters[_callPropertyPath].Length == 0)
             {
@@ -293,7 +294,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     switch (mode)
                     {
                         case PersistentListenerMode.Object:
-                            EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                            var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
+                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
+
+                            EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, methodParameterType,
+                                !target.objectReferenceValue.IsAsset());
                             break;
 
                         case PersistentListenerMode.Float:
@@ -314,7 +319,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 switch (mode)
                 {
                     case PersistentListenerMode.Object:
-                        EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
+                        var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
+                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
+
+                        EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, methodParameterType,
+                            !target.objectReferenceValue.IsAsset());
                         break;
 
                     case PersistentListenerMode.Float:
@@ -651,7 +660,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
                                 }
                             }
 
-                            if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
+                            if (parameters.Length == 0 || parameters.Length == 1 && (acceptedParameterTypes.Contains(parameters[0].ParameterType) || 
+                                parameters[0].ParameterType.IsSubclassOf(typeof(UnityEngine.Object))))
                             {
                                 persistentMethods.Add(new MethodInfo(targetProperty.objectReferenceValue, $"{targetProperty.objectReferenceValue.GetType().ToString()}",
                                     $"{(methods[i].IsPublic ? "Public." : "NonPublic.")}{methods[i].Name}", methods[i].GetParameters()));
@@ -686,7 +696,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
                                     }
                                 }
 
-                                if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
+                                if (parameters.Length == 0 || parameters.Length == 1 && (acceptedParameterTypes.Contains(parameters[0].ParameterType) ||
+                                    parameters[0].ParameterType.IsSubclassOf(typeof(UnityEngine.Object))))
                                 {
                                     persistentMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
                                         $"{(methods[i].IsPublic ? "Public." : "NonPublic.")}{methods[i].Name}", methods[i].GetParameters()));
@@ -802,7 +813,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     info.ListenerModeProperty.intValue = (int)PersistentListenerMode.String;
                 }
-                else if (info.Arguments[0].ParameterType == typeof(UnityEngine.Object))
+                else if (info.Arguments[0].ParameterType == typeof(UnityEngine.Object) || info.Arguments[0].ParameterType.IsSubclassOf(typeof(UnityEngine.Object)))
                 {
                     info.ListenerModeProperty.intValue = (int)PersistentListenerMode.Object;
                 }
