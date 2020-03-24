@@ -28,7 +28,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         public static MethodInfo NoTarget()
         {
-            return new MethodInfo(null, "No target", "No target", new ParameterInfo[0]);
+            return new MethodInfo(null, "No target.", "No target.", new ParameterInfo[0]);
         }
     }
 }

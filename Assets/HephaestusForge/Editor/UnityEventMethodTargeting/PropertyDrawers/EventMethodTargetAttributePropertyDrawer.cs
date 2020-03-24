@@ -439,11 +439,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += rect.width + 5;
             rect.width *= 2;
 
-            var methodInfo = persistentMethods.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName == methodNameProperty.stringValue);
+            var methodInfo = persistentMethods.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName.Split('.')[1] == methodNameProperty.stringValue);
 
             if(listenerModeProperty.intValue == (int)PersistentListenerMode.EventDefined)
             {
-                methodInfo = dynamicMethods.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName == methodNameProperty.stringValue);
+                methodInfo = dynamicMethods.Find(m => m.Target == targetProperty.objectReferenceValue && m.MethodName.Split('.')[1] == methodNameProperty.stringValue);
             }
 
             if (!methodInfo)
@@ -466,7 +466,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 var instance = persistentMethods[i];
 
-                if (instance.MethodName != "No target")
+                if (instance.MethodName != "No target.")
                 {
                     instance.TargetProperty = targetProperty;
                     instance.MethodNameProperty = methodNameProperty;
