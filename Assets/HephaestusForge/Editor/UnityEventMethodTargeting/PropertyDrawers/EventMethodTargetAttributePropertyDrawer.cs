@@ -32,8 +32,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
-            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;  
-            
+            list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;
+            list.onMouseDragCallback += OnDraggedElement;
+
             if(_availableEnums == null)
             {
                 _availableEnums = new Dictionary<Type, List<Enum>>();
@@ -47,6 +48,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             return list;
+        }
+
+        private void OnDraggedElement(ReorderableList list)
+        {
+            Debug.Log(list.index);
         }
 
         private void GetEnumsInAssemblies()
