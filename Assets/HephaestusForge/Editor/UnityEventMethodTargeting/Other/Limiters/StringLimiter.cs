@@ -1,18 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class StringLimiter : MonoBehaviour
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    // Start is called before the first frame update
-    void Start()
+    [CreateAssetMenu(fileName = "StringLimiter", menuName = "HephaestusForge/Editor/Limiters/StringLimiter", order = 0)]
+    public sealed class StringLimiter : LimiterBase<StringField>
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

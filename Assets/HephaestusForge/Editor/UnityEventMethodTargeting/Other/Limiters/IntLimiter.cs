@@ -1,18 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class IntLimiter : MonoBehaviour
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    // Start is called before the first frame update
-    void Start()
+    [CreateAssetMenu(fileName = "IntLimiter", menuName = "HephaestusForge/Editor/Limiters/IntLimiter", order = 0)]
+    public sealed class IntLimiter : LimiterBase<IntField>
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

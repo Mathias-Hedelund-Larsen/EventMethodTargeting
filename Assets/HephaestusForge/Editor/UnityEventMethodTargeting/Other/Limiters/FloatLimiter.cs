@@ -1,18 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class FloatLimiter : MonoBehaviour
+namespace HephaestusForge.UnityEventMethodTargeting
 {
-    // Start is called before the first frame update
-    void Start()
+    [CreateAssetMenu(fileName = "FloatLimiter", menuName = "HephaestusForge/Editor/Limiters/FloatLimiter", order = 0)]
+    public sealed class FloatLimiter : LimiterBase<FloatField>
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
