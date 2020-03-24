@@ -464,24 +464,27 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     {
                         object currentVal = limitations.FindPropertyRelative("_fieldValue").GetCurrentValue();
                         var parameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
-                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType;                        
+                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
 
-                        if (currentVal.GetType() == parameterType)
+                        if (currentVal != null)
                         {
-                            limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
-                                currentVal, limiterProperty, mode, fieldNameProperty, argumentsProperty));
-                        }
-                        else if (currentVal is GameObject)
-                        {
-                            var components = (currentVal as GameObject).GetComponents(parameterType).ToList();
-
-                            components.AddRange(components[0].GetComponentsInChildren(parameterType));
-
-                            for (int c = 0; c < components.Count; c++)
+                            if (currentVal.GetType() == parameterType)
                             {
-                                limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, 
-                                    $"{limitations.FindPropertyRelative("_fieldName").stringValue}.{components[i].name}[{i}]",
-                                    components[i], limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                                limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
+                                    currentVal, limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                            }
+                            else if (currentVal is GameObject)
+                            {
+                                var components = (currentVal as GameObject).GetComponents(parameterType).ToList();
+
+                                components.AddRange(components[0].GetComponentsInChildren(parameterType));
+
+                                for (int c = 0; c < components.Count; c++)
+                                {
+                                    limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject,
+                                        $"{limitations.FindPropertyRelative("_fieldName").stringValue}.{components[i].name}[{i}]",
+                                        components[i], limiterProperty, mode, fieldNameProperty, argumentsProperty));
+                                }
                             }
                         }
                     }

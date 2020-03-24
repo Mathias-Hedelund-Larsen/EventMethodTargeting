@@ -23,17 +23,25 @@ MonoBehaviour:
     _guid: 94c2e5aa-8255-46f2-8adb-8fef585dd760
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 1
+    _limit: 0
     _limiter: {fileID: 11400000, guid: 9147ebbec853e594aad8c8987d48d44b, type: 2}
-    _enumTypeValue: Button.PrefabButton[0]
+    _enumTypeValue: No target.
     _enumAssembly: 
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
     _guid: 98d774d0-6716-4c19-87a1-259abfac8603
-  - _sceneGuid: None
-    _objectID: 15908
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 914422272
     _limit: 2
     _limiter: {fileID: 0}
     _enumTypeValue: Tag.Untagged
     _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: e1f85f6b-4d0f-462f-86b6-000963164aa5
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2]
+    _guid: 1380aef8-4c25-4b10-b7b3-c5538db298a7
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 914422272
+    _limit: 2
+    _limiter: {fileID: 0}
+    _enumTypeValue: Tag.Untagged
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3]
+    _guid: ebca20b6-c6dd-4bf8-8a57-b5c11f54345b
