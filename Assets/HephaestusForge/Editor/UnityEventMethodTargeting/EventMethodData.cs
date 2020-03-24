@@ -13,7 +13,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private int _objectID;
 
         [SerializeField]
-        private bool _limitByEnum;
+        private UnityEventValueLimit _limit;
 
         [SerializeField]
         private string _enumTypeValue;

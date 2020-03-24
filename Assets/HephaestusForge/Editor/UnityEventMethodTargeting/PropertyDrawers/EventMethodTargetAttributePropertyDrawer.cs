@@ -13,7 +13,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
     [CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
     public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
     {
-        private float _xOffset = 7;
+        private float _xOffset = 5;
         private string _propertyName;
         private string _propertyPath;
         private string _callPropertyPath;
@@ -128,6 +128,18 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 if(value == -1)
                 {
                     _initializedGuid.Add(_callPropertyPath, Guid.NewGuid().ToString());
+
+                    var data = _eventMethod.FindProperty("_methodTargetingData");
+                    data.arraySize++;
+
+                    eventMethodData = data.GetArrayElementAtIndex(data.arraySize - 1);
+
+                    eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
+                    eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
+                    eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_callPropertyPath}";
+                    eventMethodData.FindPropertyRelative("_guid").stringValue = _initializedGuid[_callPropertyPath];
+
+                    _eventMethod.ApplyModifiedProperties();
                 }
                 else
                 {
@@ -205,28 +217,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             var eventMethodData = arrayProperty.FindInArray((sProp) => sProp.FindPropertyRelative("_guid").stringValue == _initializedGuid[_callPropertyPath], out int index);
 
-            if(index == -1)
-            {
-                var data = _eventMethod.FindProperty("_methodTargetingData");
-                data.arraySize++;
-
-                eventMethodData = data.GetArrayElementAtIndex(data.arraySize - 1);
-
-                eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
-                eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
-                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_callPropertyPath}";
-                eventMethodData.FindPropertyRelative("_guid").stringValue = _initializedGuid[_callPropertyPath];
-
-                _eventMethod.ApplyModifiedProperties();
-            }
-
-            var limitByEnum = eventMethodData.FindPropertyRelative("_limitByEnum");
+            var _limit = eventMethodData.FindPropertyRelative("_limit");
 
             if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Unlimited"), !limitByEnum.boolValue, () => LimitByEnum(limitByEnum, false));
-                menu.AddItem(new GUIContent("Enum limit"), limitByEnum.boolValue, () => LimitByEnum(limitByEnum, true));
+                menu.AddItem(new GUIContent("Unlimited"), !_limit.boolValue, () => SetLimitation(_limit, false));
+                menu.AddItem(new GUIContent("Enum limit"), _limit.boolValue, () => SetLimitation(_limit, true));
 
                 menu.ShowAsContext();
             }
@@ -234,7 +231,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += 20;
             rect.width = width - 20;
 
-            if (limitByEnum.boolValue)
+            if (_limit.boolValue)
             {
                 DrawEnumPropertyField(rect, eventMethodData, argumentsProperty, mode);
             }
@@ -359,7 +356,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             data.Item5.serializedObject.ApplyModifiedProperties();
         }
 
-        private void LimitByEnum(SerializedProperty limitByEnum, bool value)
+        private void SetLimitation(SerializedProperty limitByEnum, bool value)
         {
             limitByEnum.boolValue = value;
             _eventMethod.ApplyModifiedProperties();

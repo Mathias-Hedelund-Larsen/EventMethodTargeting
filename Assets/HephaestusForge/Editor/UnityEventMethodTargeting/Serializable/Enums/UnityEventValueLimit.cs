@@ -2,9 +2,8 @@
 {
     public enum UnityEventValueLimit
     {
-        None = 0,
-        SingleValue = 1,
-        Array = 2,
-        Enum = 3
+        Unlimited = 0,
+        Array = 1,
+        Enum = 2
     }
 }
