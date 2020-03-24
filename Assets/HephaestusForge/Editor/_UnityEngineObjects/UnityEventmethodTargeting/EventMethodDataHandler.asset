@@ -31,3 +31,21 @@ MonoBehaviour:
     _enumTypeValue: Layer.UI
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[0]
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 99311085
+    _limitByEnum: 1
+    _enumTypeValue: Layer.UI
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnValueChanged.Array[0]
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 1969793445
+    _limitByEnum: 1
+    _enumTypeValue: Tag.EditorOnly
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnEndEdit.Array[0]
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 968356996
+    _limitByEnum: 1
+    _enumTypeValue: Tag.EditorOnly
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.Array[1]

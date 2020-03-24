@@ -420,7 +420,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                                         if (IsEventAndMethodParametersEqual(fieldInfo.FieldType, parameters))
                                         {
                                             dynamicMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
-                                                $"{methods[i].Name}", methods[i].GetParameters()){ IsDynamic = true });
+                                                $"{(methods[i].IsPublic ? "Public." : "NonPublic.")}{methods[i].Name}", methods[i].GetParameters()){ IsDynamic = true });
                                         }
                                     }
                                 }
@@ -428,7 +428,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                                 if (parameters.Length == 0 || parameters.Length == 1 && acceptedParameterTypes.Contains(parameters[0].ParameterType))
                                 {
                                     persistentMethods.Add(new MethodInfo(components[componentIndex], components[componentIndex].GetType().ToString(),
-                                        $"{methods[i].Name}", methods[i].GetParameters()));
+                                        $"{(methods[i].IsPublic ? "Public." : "NonPublic.")}{methods[i].Name}", methods[i].GetParameters()));
                                 }
                             }
                         }
@@ -511,7 +511,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             MethodInfo info = (MethodInfo)methodInfo;
 
             info.TargetProperty.objectReferenceValue = info.Target;
-            info.MethodNameProperty.stringValue = info.MethodName;
+            info.MethodNameProperty.stringValue = info.MethodName.Split('.')[1];
 
             if (info.IsDynamic)
             {
