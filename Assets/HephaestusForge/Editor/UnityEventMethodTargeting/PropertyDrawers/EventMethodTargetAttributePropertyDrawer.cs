@@ -276,7 +276,14 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
             else if((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Array)
             {
-                DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, );
+                SerializedProperty[] fieldsProperty = new SerializedProperty[limiters.Length];
+
+                for (int i = 0; i < limiters.Length; i++)
+                {
+                    fieldsProperty[i] = new SerializedObject(limiters[i]).FindProperty("_fields");
+                }
+
+                DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, fieldsProperty);
             }
             else
             {
@@ -291,7 +298,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
-        private void DrawArrayLimiterPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, SerializedProperty[] limits)
+        private void DrawArrayLimiterPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode,
+            SerializedProperty[] limits)
         {
 
         }
