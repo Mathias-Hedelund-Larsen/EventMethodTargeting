@@ -33,7 +33,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
             list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;
-            list.onMouseDragCallback += OnDraggedElement;
+            list.draggable = false;
 
             if(_availableEnums == null)
             {
@@ -48,11 +48,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             return list;
-        }
-
-        private void OnDraggedElement(ReorderableList list)
-        {
-            Debug.Log(list.index);
         }
 
         private void GetEnumsInAssemblies()
