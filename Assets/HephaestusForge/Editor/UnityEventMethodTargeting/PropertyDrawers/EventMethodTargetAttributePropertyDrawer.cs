@@ -55,6 +55,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private void Reordered(ReorderableList list, int oldIndex, int newIndex)
         {
+            if (oldIndex == newIndex) return;
+                
             var keys = _initializedGuid.Keys.ToArray();
             Dictionary<string, string> updatedGuid = new Dictionary<string, string>();
 
@@ -68,9 +70,28 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 {
                     updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{newIndex}]"), _initializedGuid[keys[i]]);
                 }
-                else if(index >= newIndex)
+               
+                if(oldIndex >= newIndex)
                 {
-                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
+                    if (index > newIndex)
+                    {
+                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
+                    }
+                    else
+                    {
+                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index - 1}]"), _initializedGuid[keys[i]]);
+                    }
+                }
+                else 
+                {
+                    if (index > newIndex)
+                    {
+                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index - 1}]"), _initializedGuid[keys[i]]);
+                    }
+                    else
+                    {
+                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
+                    }
                 }
             }
 
