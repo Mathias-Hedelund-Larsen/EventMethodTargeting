@@ -300,6 +300,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                             argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = 
                                 EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, 
                                 methodParameterType, !target.objectReferenceValue.IsAsset());
+
                             break;
 
                         case PersistentListenerMode.Float:
@@ -309,6 +310,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                     if (EditorGUI.EndChangeCheck())
                     {
+                        EditorUtility.SetDirty(argumentsProperty.serializedObject.targetObject);
                         argumentsProperty.serializedObject.ApplyModifiedProperties();
                     }
                 }
@@ -325,7 +327,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                         argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue =
                                EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue,
-                               methodParameterType, !target.objectReferenceValue.IsAsset());                        
+                               methodParameterType, !target.objectReferenceValue.IsAsset());
+
                         break;
 
                     case PersistentListenerMode.Float:
@@ -335,6 +338,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 if (EditorGUI.EndChangeCheck())
                 {
+                    EditorUtility.SetDirty(argumentsProperty.serializedObject.targetObject);
                     argumentsProperty.serializedObject.ApplyModifiedProperties();
                 }
             }
