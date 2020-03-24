@@ -48,8 +48,8 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
-    _limiter: {fileID: 11400000, guid: 9147ebbec853e594aad8c8987d48d44b, type: 2}
-    _enumTypeValue: AutoGit
+    _limiter: {fileID: 0}
+    _enumTypeValue: No target.
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
     _guid: 38b999c7-b53a-417d-8f59-07f6f52ffb0b

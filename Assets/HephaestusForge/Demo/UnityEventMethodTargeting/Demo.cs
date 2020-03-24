@@ -1,6 +1,7 @@
 ﻿using HephaestusForge.UnityEventMethodTargeting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class Demo : MonoBehaviour
 {
@@ -31,7 +32,7 @@ public class Demo : MonoBehaviour
         Debug.Log(val);
     }
 
-    public void TakeObject(ScriptableObject obj)
+    public void TakeObject(Button obj)
     {
         Debug.Log(obj);
     }

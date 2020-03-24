@@ -1338,7 +1338,7 @@ MonoBehaviour:
         m_MethodName: TakeObject
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 2142777327}
+          m_ObjectArgument: {fileID: 914422272}
           m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 3
           m_FloatArgument: 66.57

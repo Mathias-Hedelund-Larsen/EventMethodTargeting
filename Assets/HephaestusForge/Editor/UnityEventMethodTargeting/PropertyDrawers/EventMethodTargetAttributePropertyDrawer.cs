@@ -297,8 +297,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
                             var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
                             | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
 
-                            EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, methodParameterType,
-                                !target.objectReferenceValue.IsAsset());
+                            argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = 
+                                EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, 
+                                methodParameterType, !target.objectReferenceValue.IsAsset());
                             break;
 
                         case PersistentListenerMode.Float:
@@ -322,8 +323,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
                             | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
 
-                        EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, methodParameterType,
-                            !target.objectReferenceValue.IsAsset());
+                        argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue =
+                               EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue,
+                               methodParameterType, !target.objectReferenceValue.IsAsset());                        
                         break;
 
                     case PersistentListenerMode.Float:
