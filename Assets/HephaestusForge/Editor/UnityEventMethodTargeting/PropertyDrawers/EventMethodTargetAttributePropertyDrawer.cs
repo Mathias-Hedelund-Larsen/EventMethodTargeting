@@ -540,6 +540,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
             }
 
+            EditorUtility.SetDirty(info.ListenerModeProperty.serializedObject.targetObject);
             info.ListenerModeProperty.serializedObject.ApplyModifiedProperties();
         }
 
