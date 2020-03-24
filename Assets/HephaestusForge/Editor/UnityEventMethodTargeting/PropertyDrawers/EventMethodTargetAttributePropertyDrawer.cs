@@ -65,6 +65,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     eventMethodData.FindPropertyRelative("_propertyPath").stringValue = item.Key;
                 }
             }
+
+            arrayProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void GetEnumsInAssemblies()
