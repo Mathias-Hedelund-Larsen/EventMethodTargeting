@@ -13,6 +13,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
     [CustomPropertyDrawer(typeof(EventMethodTargetAttribute))]
     public class EventMethodTargetAttributePropertyDrawer : PropertyDrawer
     {
+        private float _xOffset = 7;
         private string _propertyName;
         private string _propertyPath;
         private string _callPropertyPath;
@@ -35,7 +36,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
-            list.onReorderCallbackWithDetails = Reordered;
+            list.draggable = false;
             list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;
 
             if(_availableEnums == null)
@@ -51,70 +52,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             return list;
-        }
-
-        private void Reordered(ReorderableList list, int oldIndex, int newIndex)
-        {
-            if (oldIndex == newIndex) return;
-                
-            var keys = _initializedGuid.Keys.ToArray();
-            Dictionary<string, string> updatedGuid = new Dictionary<string, string>();
-
-            for (int i = 0; i < keys.Length; i++)
-            {
-                GetSubStringsBetweenChars(keys[i], '[', ']', out string[] full, out string[] inside);
-
-                int index = int.Parse(inside[inside.Length - 1]);
-
-                if (index == oldIndex)
-                {
-                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{newIndex}]"), _initializedGuid[keys[i]]);
-                }
-                else if (index == newIndex)
-                {
-                    if (oldIndex > index)
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
-                    }
-                    else
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
-                    }
-                }
-                else if (index > newIndex)
-                { 
-                    if(oldIndex > index)
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
-                    }
-                    else
-                    {
-                        updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index}]"), _initializedGuid[keys[i]]);
-                    }
-                }
-                else
-                {
-                    updatedGuid.Add(keys[i], _initializedGuid[keys[i]]);
-                }
-            }
-
-            _initializedGuid.Clear();
-
-            _initializedGuid = updatedGuid;
-
-            var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
-
-            foreach (var item in _initializedGuid)
-            {
-                var eventMethodData = arrayProperty.FindInArray((sProp) => sProp.FindPropertyRelative("_guid").stringValue == _initializedGuid[_callPropertyPath], out int index);
-
-                if(index > -1)
-                {
-                    eventMethodData.FindPropertyRelative("_propertyPath").stringValue = item.Key;                   
-                }
-            }
-
-            arrayProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void GetEnumsInAssemblies()
@@ -217,6 +154,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         {
             rect.width = rect.width / 3 - 5;
 
+            rect.x += _xOffset;
             EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
 
             rect.x += rect.width + 5;
@@ -436,6 +374,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             SerializedProperty listenerModeProperty)
         {
             rect.width = rect.width / 3 - 5;
+            rect.x += _xOffset;
 
             EditorGUI.PropertyField(rect, callStateProperty, new GUIContent(""));
 
