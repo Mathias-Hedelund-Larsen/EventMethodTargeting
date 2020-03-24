@@ -295,11 +295,17 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     {
                         case PersistentListenerMode.Object:
                             var methodParameterType = target.objectReferenceValue.GetType().GetMethod(methodName.stringValue, BindingFlags.Instance | BindingFlags.Public
-                            | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
+                                | BindingFlags.NonPublic).GetParameters()[0].ParameterType;
 
-                            argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = 
-                                EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue, 
+                            var targetObj = EditorGUI.ObjectField(rect, new GUIContent(""), argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue,
                                 methodParameterType, !target.objectReferenceValue.IsAsset());
+
+                            argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = targetObj;
+
+                            if (targetObj)
+                            {
+                                argumentsProperty.FindPropertyRelative("m_ObjectArgumentAssemblyTypeName").stringValue = targetObj.GetType().AssemblyQualifiedName;
+                            }
 
                             break;
 
