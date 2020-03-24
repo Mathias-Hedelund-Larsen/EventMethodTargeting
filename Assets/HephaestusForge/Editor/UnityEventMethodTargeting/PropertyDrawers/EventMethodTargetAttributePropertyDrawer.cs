@@ -76,7 +76,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
                 else
                 {
-                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index}]"), _initializedGuid[keys[i]]);
+                    updatedGuid.Add(keys[i], _initializedGuid[keys[i]]);
                 }
             }
 
