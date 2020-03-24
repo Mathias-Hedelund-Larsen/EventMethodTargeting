@@ -16,6 +16,7 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
+    _limiter: {fileID: 0}
     _enumTypeValue: KeyCode.None
     _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
@@ -23,6 +24,7 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
+    _limiter: {fileID: 0}
     _enumTypeValue: Layer.PostProcessing
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
@@ -30,13 +32,15 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
+    _limiter: {fileID: 0}
     _enumTypeValue: Layer.PostProcessing
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2]
     _guid: 44b040ad-4194-4a26-8e88-e0ec61c1e0d6
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 0
+    _limit: 2
+    _limiter: {fileID: 0}
     _enumTypeValue: KeyCode.None
     _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
@@ -44,7 +48,16 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 0
+    _limiter: {fileID: 0}
     _enumTypeValue: Tag.MainCamera
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
     _guid: 38b999c7-b53a-417d-8f59-07f6f52ffb0b
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 914422272
+    _limit: 0
+    _limiter: {fileID: 0}
+    _enumTypeValue: Tag.MainCamera
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3]
+    _guid: 1626b35e-2136-46fb-bd8e-e1642fe871c5

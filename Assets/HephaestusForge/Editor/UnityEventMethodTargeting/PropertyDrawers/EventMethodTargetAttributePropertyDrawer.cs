@@ -159,15 +159,26 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
 
-            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty);
+            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty, methodNameProperty);
         }
 
-        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty)
+        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty, 
+            SerializedProperty methodName)
         {
             rect.width = rect.width / 3 - 5;
 
             rect.x += _xOffset;
+
+            EditorGUI.BeginChangeCheck();
+
             EditorGUI.PropertyField(rect, targetProperty, new GUIContent(""));
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                listenerModeProperty.intValue = (int)PersistentListenerMode.Void;
+                argumentsProperty.FindPropertyRelative("m_ObjectArgument").objectReferenceValue = null;
+                methodName.stringValue = "No target.";
+            }
 
             rect.x += rect.width + 5;
             rect.width *= 2;
@@ -175,6 +186,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             if (targetProperty.objectReferenceValue)
             {
                 PersistentListenerMode mode = (PersistentListenerMode)listenerModeProperty.intValue;
+                var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
+                var eventMethodData = arrayProperty.FindInArray((sProp) => sProp.FindPropertyRelative("_guid").stringValue == _initializedGuid[_callPropertyPath], out int index);
 
                 EditorGUI.BeginChangeCheck();
 
@@ -184,13 +197,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.Int:
-                        IntOrStringDraw(rect, argumentsProperty, mode);
+                        IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Float:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.String:
-                        IntOrStringDraw(rect, argumentsProperty, mode);
+                        IntOrStringDraw(rect, eventMethodData, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Bool:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
@@ -208,14 +221,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
-        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode)
+        private void IntOrStringDraw(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
         {
             var width = rect.width;
-            rect.width = 20;
-
-            var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
-
-            var eventMethodData = arrayProperty.FindInArray((sProp) => sProp.FindPropertyRelative("_guid").stringValue == _initializedGuid[_callPropertyPath], out int index);
+            rect.width = 20;            
 
             var _limit = eventMethodData.FindPropertyRelative("_limit");
 
@@ -267,7 +276,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
             else if((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Array)
             {
-
+                DrawArrayLimiterPropertyField(rect, eventMethodData, argumentsProperty, mode, );
             }
             else
             {
@@ -280,6 +289,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_StringArgument"), new GUIContent(""));
                 }
             }
+        }
+
+        private void DrawArrayLimiterPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, SerializedProperty[] limits)
+        {
+
         }
 
         private void DrawEnumPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
