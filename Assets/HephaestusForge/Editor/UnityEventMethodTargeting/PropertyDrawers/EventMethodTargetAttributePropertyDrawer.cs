@@ -343,7 +343,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 fieldNameProperty.stringValue = limitsInfos[0].TargetField;
             }
 
-            if (EditorGUI.DropdownButton(rect, new GUIContent($"{(fieldNameProperty.stringValue == "No target." ? "" : limiterProperty.objectReferenceValue.name)}" +
+            if (EditorGUI.DropdownButton(rect, new GUIContent($"{(fieldNameProperty.stringValue == "No target." ? "" : $"{limiterProperty.objectReferenceValue.name}.")}" +
                 $"{fieldNameProperty.stringValue}"), FocusType.Keyboard))
             {
                 dropDownMenu.ShowAsContext();
@@ -373,6 +373,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
                     info.ArgumentsProperty.FindPropertyRelative("m_StringArgument").stringValue = (string)info.FieldValue;
                     break;
             }
+
+            info.FieldNameProperty.serializedObject.ApplyModifiedProperties();
+            info.ArgumentsProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawEnumPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)

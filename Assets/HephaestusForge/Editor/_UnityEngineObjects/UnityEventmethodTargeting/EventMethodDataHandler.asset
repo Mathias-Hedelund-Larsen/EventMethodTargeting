@@ -56,8 +56,8 @@ MonoBehaviour:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
     _limit: 1
-    _limiter: {fileID: 0}
-    _enumTypeValue: Tag.MainCamera
+    _limiter: {fileID: 11400000, guid: aaa40ea897fb8354d9841a2da5c31131, type: 2}
+    _enumTypeValue: Hello
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3]
     _guid: 1626b35e-2136-46fb-bd8e-e1642fe871c5
