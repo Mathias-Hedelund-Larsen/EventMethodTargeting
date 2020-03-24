@@ -12,12 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2af188370644f2d49a388d774b3f015b, type: 3}
   m_Name: IntLimiter
   m_EditorClassIdentifier: 
-  _Fields:
-  - _FieldName: Test1
-    _FieldValue: 95
-  - _FieldName: Test2
-    _FieldValue: -100
-  - _FieldName: Test3
-    _FieldValue: 10
-  - _FieldName: Test4
-    _FieldValue: 80
+  _fields:
+  - _fieldName: Hello
+    _fieldValue: 10
+  - _fieldName: You
+    _fieldValue: 3

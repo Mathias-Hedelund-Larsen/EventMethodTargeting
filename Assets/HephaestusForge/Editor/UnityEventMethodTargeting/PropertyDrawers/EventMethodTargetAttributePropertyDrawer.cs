@@ -312,7 +312,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 else
                 {
                     List<LimitsInfo> limitsInfos = new List<LimitsInfo>();
-                    var fieldNameProperty = limiterProperty.FindPropertyRelative("_enumTypeValue");
+                    var fieldNameProperty = eventMethodData.FindPropertyRelative("_enumTypeValue");
 
                     var limitations = limits.First(s => s.serializedObject.targetObject == limiterProperty.objectReferenceValue);
 
@@ -346,7 +346,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             else
             {
                 List<LimitsInfo> limitsInfos = new List<LimitsInfo>() { LimitsInfo.NoTarget() };
-                var fieldNameProperty = limiterProperty.FindPropertyRelative("_enumTypeValue");
+                var fieldNameProperty = eventMethodData.FindPropertyRelative("_enumTypeValue");
 
                 for (int i = 0; i < limits.Length; i++)
                 {
@@ -364,7 +364,11 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 for (int i = 0; i < limitsInfos.Count; i++)
                 {
                     var instance = limitsInfos[i];
-                    dropDownMenu.AddItem(new GUIContent($"{instance.Limiter.name}/{instance.TargetField}"), false, SetLimits, instance);
+
+                    if (instance.Limiter)
+                    {
+                        dropDownMenu.AddItem(new GUIContent($"{instance.Limiter.name}/{instance.TargetField}"), false, SetLimits, instance);
+                    }
                 }
 
 

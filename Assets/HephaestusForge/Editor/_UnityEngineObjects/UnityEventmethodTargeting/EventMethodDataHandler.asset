@@ -55,7 +55,7 @@ MonoBehaviour:
     _guid: 38b999c7-b53a-417d-8f59-07f6f52ffb0b
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 0
+    _limit: 1
     _limiter: {fileID: 0}
     _enumTypeValue: Tag.MainCamera
     _enumAssembly: UnityEngine
