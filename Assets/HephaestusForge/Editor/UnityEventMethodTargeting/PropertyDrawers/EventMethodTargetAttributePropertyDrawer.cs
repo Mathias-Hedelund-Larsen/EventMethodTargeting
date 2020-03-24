@@ -55,7 +55,28 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         private void Reordered(ReorderableList list, int oldIndex, int newIndex)
         {
+            var keys = _initializedGuid.Keys.ToArray();
+            Dictionary<string, string> updatedGuid = new Dictionary<string, string>();
 
+            for (int i = 0; i < keys.Length; i++)
+            {
+                GetSubStringsBetweenChars(keys[i], '[', ']', out string[] full, out string[] inside);
+
+                int index = int.Parse(inside[inside.Length - 1]);
+
+                if(index == oldIndex)
+                {
+                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{newIndex}]"), _initializedGuid[keys[i]]);
+                }
+                else if(index >= newIndex)
+                {
+                    updatedGuid.Add(keys[i].Replace(full[full.Length - 1], $"[{index + 1}]"), _initializedGuid[keys[i]]);
+                }
+            }
+
+            _initializedGuid.Clear();
+
+            _initializedGuid = updatedGuid;
 
             var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
 
@@ -685,11 +706,18 @@ namespace HephaestusForge.UnityEventMethodTargeting
             return false;
         }
 
-        private void GetSubStringBetweenChars(string origin, char start, char end, out string fullMatch, out string insideEncapsulation)
+        private void GetSubStringsBetweenChars(string origin, char start, char end, out string[] fullMatch, out string[] insideEncapsulation)
         {
-            var match = Regex.Match(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
-            fullMatch = match.Groups[0].Value;
-            insideEncapsulation = match.Groups[1].Value;
+            var matches = Regex.Matches(origin, string.Format(@"\{0}(.*?)\{1}", start, end));
+            fullMatch = new string[matches.Count];
+            insideEncapsulation = new string[matches.Count];
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                fullMatch[i] = matches[i].Groups[0].Value;
+
+                insideEncapsulation[i] = matches[i].Groups[1].Value;
+            }
         }
 
         private void OnLostInspectorFocus()
