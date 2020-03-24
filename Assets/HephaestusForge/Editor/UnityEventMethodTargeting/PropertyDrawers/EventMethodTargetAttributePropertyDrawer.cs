@@ -14,6 +14,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
     {
         private string _propertyName;
         private string _propertyPath;
+        private string _callPropertyPath;
         private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
         private static SerializedObject _eventMethod;
@@ -33,7 +34,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
             list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;
-            list.onReorderCallback = Reordered;
 
             if(_availableEnums == null)
             {
@@ -48,11 +48,6 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             return list;
-        }
-
-        private void Reordered(ReorderableList list)
-        {
-            Debug.Log(list.index);
         }
 
         private void GetEnumsInAssemblies()
@@ -113,6 +108,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             var persistantCallProperty = _initialized[_propertyPath].Item3.serializedProperty.GetArrayElementAtIndex(index);
+            _callPropertyPath = persistantCallProperty.propertyPath;
 
             var targetProperty = persistantCallProperty.FindPropertyRelative("m_Target");
             var methodNameProperty = persistantCallProperty.FindPropertyRelative("m_MethodName");
@@ -185,7 +181,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             {
                 return sProp.FindPropertyRelative("_sceneGuid").stringValue == _initialized[_propertyPath].Item2 &&
                 sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue == 
-                $"{_propertyPath}.Array[{listIndex}]";
+                $"{_callPropertyPath}";
             }, out int index);
 
             if(index == -1)
@@ -197,7 +193,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
                 eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
                 eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
-                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_propertyPath}.Array[{listIndex}]";
+                eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_callPropertyPath}";
 
                 _eventMethod.ApplyModifiedProperties();
             }

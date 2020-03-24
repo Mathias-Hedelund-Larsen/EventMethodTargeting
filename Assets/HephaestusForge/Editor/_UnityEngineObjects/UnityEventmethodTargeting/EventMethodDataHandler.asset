@@ -49,3 +49,15 @@ MonoBehaviour:
     _enumTypeValue: Tag.EditorOnly
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[2]
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 968356996
+    _limitByEnum: 1
+    _enumTypeValue: Layer.TransparentFX
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 968356996
+    _limitByEnum: 1
+    _enumTypeValue: Tag.Untagged
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
