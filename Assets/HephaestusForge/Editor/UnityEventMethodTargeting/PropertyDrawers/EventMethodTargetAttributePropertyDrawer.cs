@@ -311,16 +311,79 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
                 else
                 {
-                    List<LimitsInfo> limitsInfos = new List<LimitsInfo>() { LimitsInfo.NoTarget() };
+                    List<LimitsInfo> limitsInfos = new List<LimitsInfo>();
+                    var fieldNameProperty = limiterProperty.FindPropertyRelative("_enumTypeValue");
 
                     var limitations = limits.First(s => s.serializedObject.targetObject == limiterProperty.objectReferenceValue);
 
                     for (int i = 0; i < limitations.arraySize; i++)
                     {
+                        limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
+                            limitations.FindPropertyRelative("_fieldValue").GetCurrentValue(), fieldNameProperty, mode, argumentsProperty));
+                    }
 
+                    GenericMenu dropDownMenu = new GenericMenu();
+
+                    for (int i = 0; i < limitsInfos.Count; i++)
+                    {
+                        var instance = limitsInfos[i];
+                        dropDownMenu.AddItem(new GUIContent($"{instance.Limiter.name}/{instance.TargetField}"), false, SetLimits, instance);
+                    }
+
+
+                    if (!limitsInfos.Any(lI => lI.TargetField == fieldNameProperty.stringValue))
+                    {
+                        fieldNameProperty.stringValue = limitsInfos[0].TargetField;
+                    }
+
+                    if (EditorGUI.DropdownButton(rect, new GUIContent($"{(fieldNameProperty.stringValue == "No target." ? "" : limiterProperty.objectReferenceValue.name)}" +
+                        $"{fieldNameProperty.stringValue}"), FocusType.Keyboard))
+                    {
+                        dropDownMenu.ShowAsContext();
                     }
                 }
             }
+            else
+            {
+                List<LimitsInfo> limitsInfos = new List<LimitsInfo>() { LimitsInfo.NoTarget() };
+                var fieldNameProperty = limiterProperty.FindPropertyRelative("_enumTypeValue");
+
+                for (int i = 0; i < limits.Length; i++)
+                {
+                    for (int t = 0; t < limits[i].arraySize; t++)
+                    {
+                        var limitations = limits[i].GetArrayElementAtIndex(t);
+
+                       limitsInfos.Add(new LimitsInfo(limitations.serializedObject.targetObject, limitations.FindPropertyRelative("_fieldName").stringValue,
+                           limitations.FindPropertyRelative("_fieldValue").GetCurrentValue(), fieldNameProperty, mode, argumentsProperty));
+                    }
+                }
+
+                GenericMenu dropDownMenu = new GenericMenu();
+
+                for (int i = 0; i < limitsInfos.Count; i++)
+                {
+                    var instance = limitsInfos[i];
+                    dropDownMenu.AddItem(new GUIContent($"{instance.Limiter.name}/{instance.TargetField}"), false, SetLimits, instance);
+                }
+
+
+                if (!limitsInfos.Any(lI => lI.TargetField == fieldNameProperty.stringValue))
+                {
+                    fieldNameProperty.stringValue = limitsInfos[0].TargetField;
+                }
+
+                if (EditorGUI.DropdownButton(rect, new GUIContent($"{(fieldNameProperty.stringValue == "No target." ? "" : limiterProperty.objectReferenceValue.name)}" +
+                    $"{fieldNameProperty.stringValue}"), FocusType.Keyboard))
+                {
+                    dropDownMenu.ShowAsContext();
+                }
+            }
+        }
+
+        private void SetLimits(object limits)
+        {
+            
         }
 
         private void DrawEnumPropertyField(Rect rect, SerializedProperty eventMethodData, SerializedProperty argumentsProperty, PersistentListenerMode mode)
