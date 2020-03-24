@@ -12,18 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8da635c56ba64f4291cf29b76889e89, type: 3}
   m_Name: EventMethodDataHandler
   m_EditorClassIdentifier: 
-  _methodTargetingData:
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 968356996
-    _limitByEnum: 1
-    _enumTypeValue: KeyCode.None
-    _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
-    _guid: 4f7e8976-95a7-494e-b40a-60eece6fdc62
-  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
-    _objectID: 968356996
-    _limitByEnum: 1
-    _enumTypeValue: Tag.MainCamera
-    _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
-    _guid: 5120bbd2-fc0c-4fb7-a582-d4fd9fcd1d23
+  _methodTargetingData: []
