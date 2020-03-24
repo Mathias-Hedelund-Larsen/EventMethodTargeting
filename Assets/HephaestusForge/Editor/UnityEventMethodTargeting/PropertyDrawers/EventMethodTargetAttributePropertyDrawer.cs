@@ -222,8 +222,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
             if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Unlimited"), !_limit.boolValue, () => SetLimitation(_limit, false));
-                menu.AddItem(new GUIContent("Enum limit"), _limit.boolValue, () => SetLimitation(_limit, true));
+                menu.AddItem(new GUIContent("Unlimited"), _limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(_limit, UnityEventValueLimit.Unlimited));
+                menu.AddItem(new GUIContent("Enum limit"), _limit.intValue == (int)UnityEventValueLimit.Enum, () => SetLimitation(_limit, UnityEventValueLimit.Enum));
 
                 menu.ShowAsContext();
             }
@@ -231,9 +231,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
             rect.x += 20;
             rect.width = width - 20;
 
-            if (_limit.boolValue)
+            if ((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Enum)
             {
                 DrawEnumPropertyField(rect, eventMethodData, argumentsProperty, mode);
+            }
+            else if((UnityEventValueLimit)_limit.intValue == UnityEventValueLimit.Array)
+            {
+
             }
             else
             {
@@ -356,9 +360,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
             data.Item5.serializedObject.ApplyModifiedProperties();
         }
 
-        private void SetLimitation(SerializedProperty limitByEnum, bool value)
+        private void SetLimitation(SerializedProperty limit, UnityEventValueLimit value)
         {
-            limitByEnum.boolValue = value;
+            limit.intValue = (int)value;
             _eventMethod.ApplyModifiedProperties();
         }
 
