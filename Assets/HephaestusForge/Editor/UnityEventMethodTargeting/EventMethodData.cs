@@ -23,5 +23,8 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
         [SerializeField]
         private string _propertyPath;
+
+        [SerializeField]
+        private string _guid;
     }
 }

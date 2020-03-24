@@ -15,6 +15,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private string _propertyName;
         private string _propertyPath;
         private string _callPropertyPath;
+        private Dictionary<string, string> _initializedGuid = new Dictionary<string, string>();
         private Dictionary<string, Tuple<int, string, ReorderableList>> _initialized = new Dictionary<string, Tuple<int, string, ReorderableList>>();
 
         private static SerializedObject _eventMethod;
@@ -33,6 +34,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             list.drawElementCallback = DrawListElement;
             list.onAddDropdownCallback = OnAddClicked;
             list.onRemoveCallback = OnRemoveClicked;
+            list.onReorderCallback = Reordered;
             list.elementHeight = EditorGUIUtility.singleLineHeight * 2 + EditorGUIUtility.standardVerticalSpacing * 5;
 
             if(_availableEnums == null)
@@ -48,6 +50,21 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             return list;
+        }
+
+        private void Reordered(ReorderableList list)
+        {
+            var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
+
+            foreach (var item in _initializedGuid)
+            {
+                var eventMethodData = arrayProperty.FindInArray((sProp) => sProp.FindPropertyRelative("_guid").stringValue == item.Value, out int index);
+
+                if(index > -1)
+                {
+                    eventMethodData.FindPropertyRelative("_propertyPath").stringValue = item.Key;
+                }
+            }
         }
 
         private void GetEnumsInAssemblies()
@@ -110,6 +127,27 @@ namespace HephaestusForge.UnityEventMethodTargeting
             var persistantCallProperty = _initialized[_propertyPath].Item3.serializedProperty.GetArrayElementAtIndex(index);
             _callPropertyPath = persistantCallProperty.propertyPath;
 
+            if (!_initializedGuid.ContainsKey(_callPropertyPath))
+            {
+                var arrayProperty = _eventMethod.FindProperty("_methodTargetingData");
+
+                var eventMethodData = arrayProperty.FindInArray((sProp) =>
+                {
+                    return sProp.FindPropertyRelative("_sceneGuid").stringValue == _initialized[_propertyPath].Item2 &&
+                    sProp.FindPropertyRelative("_objectID").intValue == _initialized[_propertyPath].Item1 && sProp.FindPropertyRelative("_propertyPath").stringValue ==
+                    $"{_callPropertyPath}";
+                }, out int value);
+
+                if(value == -1)
+                {
+                    _initializedGuid.Add(_callPropertyPath, Guid.NewGuid().ToString());
+                }
+                else
+                {
+                    _initializedGuid.Add(_callPropertyPath, eventMethodData.FindPropertyRelative("_guid").stringValue);
+                }
+            }
+
             var targetProperty = persistantCallProperty.FindPropertyRelative("m_Target");
             var methodNameProperty = persistantCallProperty.FindPropertyRelative("m_MethodName");
             var listenerModeProperty = persistantCallProperty.FindPropertyRelative("m_Mode");
@@ -122,10 +160,10 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
 
-            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty, index);
+            DrawBottomLine(rect, targetProperty, argumentsProperty, listenerModeProperty);
         }
 
-        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty, int index)
+        private void DrawBottomLine(Rect rect, SerializedProperty targetProperty, SerializedProperty argumentsProperty, SerializedProperty listenerModeProperty)
         {
             rect.width = rect.width / 3 - 5;
 
@@ -146,13 +184,13 @@ namespace HephaestusForge.UnityEventMethodTargeting
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_ObjectArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.Int:
-                        IntOrStringDraw(rect, argumentsProperty, mode, index);
+                        IntOrStringDraw(rect, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Float:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_FloatArgument"), new GUIContent(""));
                         break;
                     case PersistentListenerMode.String:
-                        IntOrStringDraw(rect, argumentsProperty, mode, index);
+                        IntOrStringDraw(rect, argumentsProperty, mode);
                         break;
                     case PersistentListenerMode.Bool:
                         EditorGUI.PropertyField(rect, argumentsProperty.FindPropertyRelative("m_BoolArgument"), new GUIContent(""));
@@ -170,7 +208,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
         }
 
-        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode, int listIndex)
+        private void IntOrStringDraw(Rect rect, SerializedProperty argumentsProperty, PersistentListenerMode mode)
         {
             var width = rect.width;
             rect.width = 20;
@@ -194,6 +232,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 eventMethodData.FindPropertyRelative("_objectID").intValue = _initialized[_propertyPath].Item1;
                 eventMethodData.FindPropertyRelative("_sceneGuid").stringValue = _initialized[_propertyPath].Item2;
                 eventMethodData.FindPropertyRelative("_propertyPath").stringValue = $"{_callPropertyPath}";
+                eventMethodData.FindPropertyRelative("_guid").stringValue = _initializedGuid[_callPropertyPath];
 
                 _eventMethod.ApplyModifiedProperties();
             }

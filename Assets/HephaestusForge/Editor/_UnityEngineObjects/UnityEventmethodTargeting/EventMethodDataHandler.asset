@@ -19,45 +19,67 @@ MonoBehaviour:
     _enumTypeValue: KeyCode.Alpha6
     _enumAssembly: UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _propertyPath: m_OnClick
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 0
     _enumTypeValue: Layer.UI
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[0]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 99311085
     _limitByEnum: 1
     _enumTypeValue: Layer.UI
     _enumAssembly: UnityEngine
     _propertyPath: m_OnValueChanged.Array[0]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 1969793445
     _limitByEnum: 1
     _enumTypeValue: Layer.Default
     _enumAssembly: UnityEngine
     _propertyPath: m_OnEndEdit.Array[0]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 1
     _enumTypeValue: Tag.EditorOnly
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[1]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 1
     _enumTypeValue: Tag.EditorOnly
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.Array[2]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 1
     _enumTypeValue: Layer.TransparentFX
     _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
+    _guid: 
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 968356996
+    _limitByEnum: 1
+    _enumTypeValue: Layer.Default
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
+    _guid: 
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 968356996
     _limitByEnum: 1
     _enumTypeValue: Tag.Untagged
     _enumAssembly: UnityEngine
-    _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
+    _propertyPath: m_OnClick.m_OnClick.m_PersistentCalls.m_Calls.Array.data[0]
+    _guid: 
+  - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
+    _objectID: 968356996
+    _limitByEnum: 1
+    _enumTypeValue: Tag.Untagged
+    _enumAssembly: UnityEngine
+    _propertyPath: m_OnClick.m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
+    _guid: 
