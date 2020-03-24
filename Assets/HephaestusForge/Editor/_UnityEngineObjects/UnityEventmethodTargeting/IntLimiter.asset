@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: IntLimiter
   m_EditorClassIdentifier: 
   _Fields:
-  - _fieldName: Test1
-    _fieldValue: 5
-  - _fieldName: Test2
-    _fieldValue: -100
-  - _fieldName: Test3
-    _fieldValue: 10
-  - _fieldName: 
-    _fieldValue: 0
+  - _FieldName: Test1
+    _FieldValue: 95
+  - _FieldName: Test2
+    _FieldValue: -100
+  - _FieldName: Test3
+    _FieldValue: 10
+  - _FieldName: Test4
+    _FieldValue: 80

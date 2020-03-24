@@ -219,11 +219,41 @@ namespace HephaestusForge.UnityEventMethodTargeting
 
             var _limit = eventMethodData.FindPropertyRelative("_limit");
 
+            ScriptableObject[] limiters = new ScriptableObject[0];
+
+            if (mode == PersistentListenerMode.Int)
+            {
+                var intLimiters = AssetDatabase.FindAssets("t:IntLimiter");
+
+                limiters = new ScriptableObject[intLimiters.Length];
+
+                for (int i = 0; i < intLimiters.Length; i++)
+                {
+                    limiters[i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(intLimiters[i]));
+                }
+            }
+            else
+            {
+                var stringLimiters = AssetDatabase.FindAssets("t:StringLimiter");
+
+                limiters = new ScriptableObject[stringLimiters.Length];
+
+                for (int i = 0; i < stringLimiters.Length; i++)
+                {
+                    limiters[i] = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(stringLimiters[i]));
+                }
+            }
+
             if (EditorGUI.DropdownButton(rect, new GUIContent(GetTexture()), FocusType.Keyboard, new GUIStyle() { fixedWidth = 50, border = new RectOffset(1, 1, 1, 1) }))
             {
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Unlimited"), _limit.intValue == (int)UnityEventValueLimit.Unlimited, () => SetLimitation(_limit, UnityEventValueLimit.Unlimited));
                 menu.AddItem(new GUIContent("Enum limit"), _limit.intValue == (int)UnityEventValueLimit.Enum, () => SetLimitation(_limit, UnityEventValueLimit.Enum));
+
+                if (limiters.Length > 0)
+                {
+                    menu.AddItem(new GUIContent("Array limit"), _limit.intValue == (int)UnityEventValueLimit.Array, () => SetLimitation(_limit, UnityEventValueLimit.Array));
+                }
 
                 menu.ShowAsContext();
             }

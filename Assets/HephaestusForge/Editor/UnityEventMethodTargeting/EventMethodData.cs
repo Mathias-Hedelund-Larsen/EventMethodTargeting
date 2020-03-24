@@ -16,6 +16,9 @@ namespace HephaestusForge.UnityEventMethodTargeting
         private UnityEventValueLimit _limit;
 
         [SerializeField]
+        private ScriptableObject _limiter;
+
+        [SerializeField]
         private string _enumTypeValue;
 
         [SerializeField]

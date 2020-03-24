@@ -1,14 +1,10 @@
-﻿using UnityEngine;
-
-namespace HephaestusForge.UnityEventMethodTargeting.Internal
+﻿namespace HephaestusForge.UnityEventMethodTargeting.Internal
 {
     [System.Serializable]
     public abstract class EditorField<T>
     {
-        [SerializeField]
-        private string _fieldName;
+        public string _FieldName;
 
-        [SerializeField]
-        private T _fieldValue;
+        public T _FieldValue;
     }
 }
