@@ -8,20 +8,22 @@ namespace HephaestusForge.UnityEventMethodTargeting
     {        
         public Object Limiter { get; }
         public string TargetField { get; }
+        public System.Object FieldValue { get; }
         public PersistentListenerMode ListenerMode { get; }
         public SerializedProperty ArgumentsProperty { get; }
 
-        public LimitsInfo(Object limiter, string targetField, PersistentListenerMode listenerMode, SerializedProperty argumentsProperty)
+        public LimitsInfo(Object limiter, string targetField, System.Object fieldValue, PersistentListenerMode listenerMode, SerializedProperty argumentsProperty)
         {
             Limiter = limiter;
             TargetField = targetField;
+            FieldValue = fieldValue;
             ListenerMode = listenerMode;
             ArgumentsProperty = argumentsProperty;
         }
 
         public static LimitsInfo NoTarget()
         {
-            return new LimitsInfo(null, "No target.", PersistentListenerMode.Void, null);
+            return new LimitsInfo(null, "No target.", null, PersistentListenerMode.Void, null);
         }
     }
 }

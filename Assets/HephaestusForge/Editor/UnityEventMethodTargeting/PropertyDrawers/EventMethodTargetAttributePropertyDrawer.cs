@@ -311,7 +311,14 @@ namespace HephaestusForge.UnityEventMethodTargeting
                 }
                 else
                 {
+                    List<LimitsInfo> limitsInfos = new List<LimitsInfo>() { LimitsInfo.NoTarget() };
 
+                    var limitations = limits.First(s => s.serializedObject.targetObject == limiterProperty.objectReferenceValue);
+
+                    for (int i = 0; i < limitations.arraySize; i++)
+                    {
+
+                    }
                 }
             }
         }
