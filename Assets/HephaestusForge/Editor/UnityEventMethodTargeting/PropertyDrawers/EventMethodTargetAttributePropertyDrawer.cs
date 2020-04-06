@@ -73,7 +73,7 @@ namespace HephaestusForge.UnityEventMethodTargeting
             }
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.FullName.Contains("Assembly-CSharp") && !a.FullName.Contains("Editor") ||
-                assemblyObjects.Any(ao => ao.name.Contains(a.FullName)) || a.FullName.Contains("UnityEngine.CoreModule")).ToArray();
+                assemblyObjects.Any(ao => ao.name.Contains(a.GetName().Name)) || a.FullName.Contains("UnityEngine.CoreModule")).ToArray();
 
             for (int i = 0; i < assemblies.Length; i++)
             {

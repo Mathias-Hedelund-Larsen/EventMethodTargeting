@@ -15,7 +15,7 @@ MonoBehaviour:
   _methodTargetingData:
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
     _objectID: 914422272
-    _limit: 1
+    _limit: 2
     _limiter: {fileID: 11400000, guid: fd14389bdb6f63b4da7c4b5bac7843e5, type: 2}
     _enumTypeValue: Test
     _enumAssembly: 
@@ -25,8 +25,8 @@ MonoBehaviour:
     _objectID: 914422272
     _limit: 0
     _limiter: {fileID: 11400000, guid: 9147ebbec853e594aad8c8987d48d44b, type: 2}
-    _enumTypeValue: No target.
-    _enumAssembly: 
+    _enumTypeValue: Tag.Finish
+    _enumAssembly: UnityEngine
     _propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1]
     _guid: 98d774d0-6716-4c19-87a1-259abfac8603
   - _sceneGuid: 9be3999b5cdeb8b459e716da02baed04
